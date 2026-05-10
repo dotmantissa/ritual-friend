@@ -10,33 +10,87 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiMembersRouteImport } from './routes/api/members'
+import { Route as ApiMembersIndexRouteImport } from './routes/api/members.$index'
+import { Route as ApiAuthDiscordRouteImport } from './routes/api/auth.discord'
+import { Route as ApiAuthDiscordCallbackRouteImport } from './routes/api/auth.discord.callback'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiMembersRoute = ApiMembersRouteImport.update({
+  id: '/api/members',
+  path: '/api/members',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMembersIndexRoute = ApiMembersIndexRouteImport.update({
+  id: '/$index',
+  path: '/$index',
+  getParentRoute: () => ApiMembersRoute,
+} as any)
+const ApiAuthDiscordRoute = ApiAuthDiscordRouteImport.update({
+  id: '/api/auth/discord',
+  path: '/api/auth/discord',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthDiscordCallbackRoute = ApiAuthDiscordCallbackRouteImport.update({
+  id: '/callback',
+  path: '/callback',
+  getParentRoute: () => ApiAuthDiscordRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/api/members': typeof ApiMembersRouteWithChildren
+  '/api/auth/discord': typeof ApiAuthDiscordRouteWithChildren
+  '/api/members/$index': typeof ApiMembersIndexRoute
+  '/api/auth/discord/callback': typeof ApiAuthDiscordCallbackRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/api/members': typeof ApiMembersRouteWithChildren
+  '/api/auth/discord': typeof ApiAuthDiscordRouteWithChildren
+  '/api/members/$index': typeof ApiMembersIndexRoute
+  '/api/auth/discord/callback': typeof ApiAuthDiscordCallbackRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/api/members': typeof ApiMembersRouteWithChildren
+  '/api/auth/discord': typeof ApiAuthDiscordRouteWithChildren
+  '/api/members/$index': typeof ApiMembersIndexRoute
+  '/api/auth/discord/callback': typeof ApiAuthDiscordCallbackRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/api/members'
+    | '/api/auth/discord'
+    | '/api/members/$index'
+    | '/api/auth/discord/callback'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/api/members'
+    | '/api/auth/discord'
+    | '/api/members/$index'
+    | '/api/auth/discord/callback'
+  id:
+    | '__root__'
+    | '/'
+    | '/api/members'
+    | '/api/auth/discord'
+    | '/api/members/$index'
+    | '/api/auth/discord/callback'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ApiMembersRoute: typeof ApiMembersRouteWithChildren
+  ApiAuthDiscordRoute: typeof ApiAuthDiscordRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +102,65 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/members': {
+      id: '/api/members'
+      path: '/api/members'
+      fullPath: '/api/members'
+      preLoaderRoute: typeof ApiMembersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/members/$index': {
+      id: '/api/members/$index'
+      path: '/$index'
+      fullPath: '/api/members/$index'
+      preLoaderRoute: typeof ApiMembersIndexRouteImport
+      parentRoute: typeof ApiMembersRoute
+    }
+    '/api/auth/discord': {
+      id: '/api/auth/discord'
+      path: '/api/auth/discord'
+      fullPath: '/api/auth/discord'
+      preLoaderRoute: typeof ApiAuthDiscordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/discord/callback': {
+      id: '/api/auth/discord/callback'
+      path: '/callback'
+      fullPath: '/api/auth/discord/callback'
+      preLoaderRoute: typeof ApiAuthDiscordCallbackRouteImport
+      parentRoute: typeof ApiAuthDiscordRoute
+    }
   }
 }
 
+interface ApiMembersRouteChildren {
+  ApiMembersIndexRoute: typeof ApiMembersIndexRoute
+}
+
+const ApiMembersRouteChildren: ApiMembersRouteChildren = {
+  ApiMembersIndexRoute: ApiMembersIndexRoute,
+}
+
+const ApiMembersRouteWithChildren = ApiMembersRoute._addFileChildren(
+  ApiMembersRouteChildren,
+)
+
+interface ApiAuthDiscordRouteChildren {
+  ApiAuthDiscordCallbackRoute: typeof ApiAuthDiscordCallbackRoute
+}
+
+const ApiAuthDiscordRouteChildren: ApiAuthDiscordRouteChildren = {
+  ApiAuthDiscordCallbackRoute: ApiAuthDiscordCallbackRoute,
+}
+
+const ApiAuthDiscordRouteWithChildren = ApiAuthDiscordRoute._addFileChildren(
+  ApiAuthDiscordRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApiMembersRoute: ApiMembersRouteWithChildren,
+  ApiAuthDiscordRoute: ApiAuthDiscordRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
