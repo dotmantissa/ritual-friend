@@ -7,6 +7,7 @@ import { WalletConnect } from "@/components/WalletConnect";
 import { NetworkGuard } from "@/components/NetworkGuard";
 import { VeiledCard } from "@/components/VeiledCard";
 import { RevealedCard } from "@/components/RevealedCard";
+import { ShareCard1200 } from "@/components/ShareCard1200";
 import { FRIEND_ZONE_ABI, FRIEND_ZONE_ADDRESS, FRIEND_ZONE_DEPLOYED } from "@/lib/constants";
 
 export const Route = createFileRoute("/")({
@@ -25,7 +26,7 @@ function normalizeUsername(value: string): string {
   return value.trim().replace(/^@+/, "").toLowerCase();
 }
 
-function FriendZonePage() {
+export function FriendZonePage() {
   const { isConnected, address } = useAccount();
   const publicClient = usePublicClient();
   const { data: walletClient } = useWalletClient();
@@ -38,6 +39,7 @@ function FriendZonePage() {
   const [totalPairings, setTotalPairings] = useState<number>(0);
   const [finding, setFinding] = useState(false);
   const [assignedFriend, setAssignedFriend] = useState<AssignedFriend | null>(null);
+  const [justRevealed, setJustRevealed] = useState(false);
 
   const isConfigured = useMemo(
     () => FRIEND_ZONE_DEPLOYED && FRIEND_ZONE_ADDRESS !== "0x0000000000000000000000000000000000000000",
@@ -107,9 +109,7 @@ function FriendZonePage() {
   }, [isConnected, seekerUsername, step]);
 
   const handleReveal = async () => {
-    if (!address || !walletClient || !publicClient) return;
-    if (!seekerUsername) return;
-
+    if (!address || !walletClient || !publicClient || !seekerUsername) return;
     setFinding(true);
     setStatus(null);
 
@@ -152,9 +152,7 @@ function FriendZonePage() {
         } catch {}
       }
 
-      if (friendIndex === null) {
-        throw new Error("FriendRevealed event missing");
-      }
+      if (friendIndex === null) throw new Error("FriendRevealed event missing");
 
       const claimRes = await fetch("/api/claim", {
         method: "POST",
@@ -172,6 +170,8 @@ function FriendZonePage() {
       }
 
       setAssignedFriend(claimData as AssignedFriend);
+      setJustRevealed(true);
+      setTimeout(() => setJustRevealed(false), 900);
       setStep("revealed");
       await refreshPool();
     } catch (error: any) {
@@ -187,21 +187,22 @@ function FriendZonePage() {
     setStatus("Quote copied.");
   };
 
-  const downloadCard = async () => {
-    const card = document.getElementById("friend-card");
-    if (!card || !assignedFriend) return;
+  const downloadShareCard = async () => {
+    if (!assignedFriend) return;
+    const target = document.getElementById("share-card-1200");
+    if (!target) return;
     const mod = await import("html-to-image");
-    const dataUrl = await mod.toPng(card, { pixelRatio: 2 });
+    const dataUrl = await mod.toPng(target, { pixelRatio: 2, cacheBust: true });
     const a = document.createElement("a");
     a.href = dataUrl;
     a.download = `ritual-friend-${assignedFriend.username}.png`;
     a.click();
-    setStatus("Card downloaded! Attach it to your tweet 🔥");
   };
 
   const shareToX = async () => {
     if (!assignedFriend) return;
-    await downloadCard();
+    await downloadShareCard();
+    setStatus("Card downloaded! Attach it to your tweet 🔥");
     const text = `Just got matched with @${assignedFriend.username} on @ritualnet 🤝\n\n"${assignedFriend.quote}"\n\nFind your Ritual friend → ${window.location.origin}\n#RitualFriendZone #Ritual`;
     window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, "_blank");
   };
@@ -209,16 +210,14 @@ function FriendZonePage() {
   return (
     <NetworkGuard>
       <ParticlesBg />
+      {assignedFriend && <ShareCard1200 username={assignedFriend.username} avatarUrl={assignedFriend.avatar_url} quote={assignedFriend.quote} />}
+
       <main className="relative z-10 mx-auto flex min-h-screen max-w-5xl flex-col px-6 py-8">
         <section className="flex flex-1 flex-col items-center justify-center text-center">
           <h1 className="text-display text-5xl sm:text-7xl">RITUAL [ Friend Zone ]</h1>
           <p className="mt-3 text-sm text-[color:var(--muted-foreground)]">find your person on the network</p>
 
-          {status && (
-            <p className="mt-6 max-w-2xl rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] px-4 py-3 text-sm">
-              {status}
-            </p>
-          )}
+          {status && <p className="mt-6 max-w-2xl rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] px-4 py-3 text-sm">{status}</p>}
 
           {step === "username" && (
             <div className="mt-8 w-full max-w-lg">
@@ -226,13 +225,9 @@ function FriendZonePage() {
                 value={usernameInput}
                 onChange={(e) => setUsernameInput(e.target.value)}
                 placeholder="your Discord username"
-                className="w-full rounded-full border border-[color:var(--border)] bg-[color:var(--surface)] px-6 py-4 text-center outline-none transition focus:border-[#7C3AED]"
+                className="w-full rounded-full border border-[color:var(--border)] bg-[color:var(--surface)] px-6 py-4 text-center outline-none transition focus:border-[#7C3AED] focus:shadow-[0_0_22px_rgba(124,58,237,0.45)]"
               />
-              <button
-                onClick={handleUsernameSubmit}
-                disabled={availableCount <= 0}
-                className="mt-5 rounded-full bg-[var(--gradient-amber)] px-8 py-3 text-sm font-bold uppercase tracking-wider text-[color:var(--background)] disabled:opacity-50"
-              >
+              <button onClick={handleUsernameSubmit} disabled={availableCount <= 0} className="mt-5 rounded-full bg-[var(--gradient-amber)] px-8 py-3 text-sm font-bold uppercase tracking-wider text-[color:var(--background)] disabled:opacity-50">
                 Find My Friend →
               </button>
               <p className="mt-5 text-xs text-[color:var(--muted-foreground)]">{totalPairings} friendships made</p>
@@ -241,7 +236,7 @@ function FriendZonePage() {
 
           {step === "wallet" && (
             <div className="mt-8">
-              <p className="mb-4">Connect your wallet to reveal your Ritual friend.</p>
+              <p className="mb-4">Great, @{seekerUsername}! Connect your wallet to reveal your Ritual friend.</p>
               <WalletConnect />
             </div>
           )}
@@ -249,11 +244,7 @@ function FriendZonePage() {
           {step === "ready" && (
             <div className="mt-8 flex flex-col items-center gap-6">
               <VeiledCard loading={finding} />
-              <button
-                onClick={handleReveal}
-                disabled={finding}
-                className="rounded-full bg-[var(--gradient-amber)] px-8 py-3 text-sm font-bold uppercase tracking-wider text-[color:var(--background)]"
-              >
+              <button onClick={handleReveal} disabled={finding} className="rounded-full bg-[var(--gradient-amber)] px-8 py-3 text-sm font-bold uppercase tracking-wider text-[color:var(--background)]">
                 {finding ? "Revealing..." : "Find My Friend →"}
               </button>
               <p className="text-xs text-[color:var(--muted-foreground)]">Sign a transaction on Ritual Chain to reveal your match.</p>
@@ -261,16 +252,29 @@ function FriendZonePage() {
           )}
 
           {step === "revealed" && assignedFriend && (
-            <div className="mt-8 flex flex-col items-center gap-5">
-              <RevealedCard
-                username={assignedFriend.username}
-                avatarUrl={assignedFriend.avatar_url}
-                quote={assignedFriend.quote}
-              />
+            <div className="relative mt-8 flex flex-col items-center gap-5">
+              {justRevealed && (
+                <>
+                  <span className="absolute left-[45%] top-[50%] size-2 rounded-full bg-[#7C3AED] [--dx:-80px] [--dy:-50px] animate-confetti-pop" />
+                  <span className="absolute left-[48%] top-[48%] size-2 rounded-full bg-[#F59E0B] [--dx:95px] [--dy:-70px] animate-confetti-pop" />
+                  <span className="absolute left-[52%] top-[52%] size-2 rounded-full bg-white [--dx:70px] [--dy:60px] animate-confetti-pop" />
+                  <span className="absolute left-[50%] top-[50%] size-2 rounded-full bg-[#A78BFA] [--dx:-90px] [--dy:40px] animate-confetti-pop" />
+                  <span className="absolute left-[49%] top-[49%] size-2 rounded-full bg-[#F59E0B] [--dx:20px] [--dy:-95px] animate-confetti-pop" />
+                  <span className="absolute left-[51%] top-[51%] size-2 rounded-full bg-white [--dx:-15px] [--dy:95px] animate-confetti-pop" />
+                  <span className="absolute left-[47%] top-[51%] size-2 rounded-full bg-[#7C3AED] [--dx:110px] [--dy:10px] animate-confetti-pop" />
+                  <span className="absolute left-[53%] top-[47%] size-2 rounded-full bg-[#F59E0B] [--dx:-110px] [--dy:-8px] animate-confetti-pop" />
+                </>
+              )}
+
+              <div className={justRevealed ? "relative animate-card-flip" : "relative"}>
+                {justRevealed && <div className="pointer-events-none absolute inset-0 w-full bg-gradient-to-r from-transparent via-[#F59E0B]/50 to-transparent animate-shimmer-sweep" />}
+                <RevealedCard username={assignedFriend.username} avatarUrl={assignedFriend.avatar_url} quote={assignedFriend.quote} />
+              </div>
+
               <div className="flex flex-wrap justify-center gap-3">
-                <button onClick={downloadCard} className="rounded-full border border-[color:var(--border)] px-4 py-2 text-xs">Download Card</button>
-                <button onClick={shareToX} className="rounded-full border border-[color:var(--border)] px-4 py-2 text-xs">Share on X</button>
-                <button onClick={copyQuote} className="rounded-full border border-[color:var(--border)] px-4 py-2 text-xs">Copy Quote</button>
+                <button onClick={downloadShareCard} className="rounded-full border border-[color:var(--border)] px-4 py-2 text-xs animate-fade-in-up [animation-delay:0.1s]">Download Card</button>
+                <button onClick={shareToX} className="rounded-full border border-[color:var(--border)] px-4 py-2 text-xs animate-fade-in-up [animation-delay:0.2s]">Share on X</button>
+                <button onClick={copyQuote} className="rounded-full border border-[color:var(--border)] px-4 py-2 text-xs animate-fade-in-up [animation-delay:0.3s]">Copy Quote</button>
               </div>
             </div>
           )}
