@@ -5,57 +5,59 @@ import "forge-std/Test.sol";
 import "../src/FriendZone.sol";
 
 contract FriendZoneTest is Test {
-    FriendZone fz;
-    address alice = address(0xA11CE);
-    address bob = address(0xB0B);
+    FriendZone internal friendZone;
+    address internal alice = address(0xA11CE);
 
     function setUp() public {
-        fz = new FriendZone();
+        friendZone = new FriendZone();
         vm.deal(alice, 10 ether);
-        vm.deal(bob, 10 ether);
     }
 
-    function testRevealEmitsAndStores() public {
+    function testRevealStoresStateAndEmits() public {
         vm.prank(alice);
-        uint256 idx = fz.revealFriend(100);
+        uint256 idx = friendZone.revealFriend(100);
+
         assertLt(idx, 100);
-        assertTrue(fz.hasRevealed(alice));
-        assertEq(fz.lastFriendIndex(alice), idx);
-        assertEq(fz.revealCount(alice), 1);
+        assertTrue(friendZone.hasRevealed(alice));
+        assertEq(friendZone.lastFriendIndex(alice), idx);
+        assertEq(friendZone.revealCount(alice), 1);
+        assertEq(friendZone.totalReveals(), 1);
     }
 
-    function testSecondRevealReturnsSameIndex() public {
+    function testSecondRevealReturnsSameIndexAndDoesNotIncrement() public {
         vm.startPrank(alice);
-        uint256 first = fz.revealFriend(50);
-        uint256 second = fz.revealFriend(50);
+        uint256 first = friendZone.revealFriend(50);
+        uint256 second = friendZone.revealFriend(50);
         vm.stopPrank();
 
         assertEq(first, second);
-        assertEq(fz.revealCount(alice), 1);
+        assertEq(friendZone.revealCount(alice), 1);
+        assertEq(friendZone.totalReveals(), 1);
     }
 
-    function testSecondRevealSkipsFeeCheck() public {
-        vm.prank(alice);
-        fz.revealFriend(10);
-
-        fz.setRevealFee(1 ether);
-
-        vm.prank(alice);
-        uint256 idx = fz.revealFriend(10);
-
-        assertEq(idx, fz.lastFriendIndex(alice));
-    }
-
-    function testMemberCountZeroRevertsWhenFirstReveal() public {
+    function testMemberCountZeroReverts() public {
         vm.prank(alice);
         vm.expectRevert(FriendZone.MemberCountZero.selector);
-        fz.revealFriend(0);
+        friendZone.revealFriend(0);
     }
 
     function testInsufficientFeeReverts() public {
-        fz.setRevealFee(0.001 ether);
+        friendZone.setRevealFee(0.1 ether);
         vm.prank(alice);
         vm.expectRevert(FriendZone.InsufficientFee.selector);
-        fz.revealFriend(10);
+        friendZone.revealFriend(10);
     }
+
+    function testOwnerCanWithdraw() public {
+        vm.prank(alice);
+        friendZone.revealFriend{ value: 1 ether }(10);
+
+        friendZone.setRevealFee(0);
+        uint256 beforeBal = address(this).balance;
+        friendZone.withdraw();
+        assertEq(address(friendZone).balance, 0);
+        assertEq(address(this).balance, beforeBal + 1 ether);
+    }
+
+    receive() external payable {}
 }

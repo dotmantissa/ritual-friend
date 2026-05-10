@@ -1,48 +1,42 @@
 interface VeiledCardProps {
-  flipped?: boolean;
-  loading?: boolean;
+  state?: "idle" | "wallet_needed" | "ready" | "pending_tx" | "mining" | "revealed" | "error";
 }
 
-// 320 × 420 mystery card — used pre-reveal.
-export function VeiledCard({ flipped = false, loading = false }: VeiledCardProps) {
+export function VeiledCard({ state = "idle" }: VeiledCardProps) {
+  const pending = state === "pending_tx";
+  const mining = state === "mining";
+
+  const border = pending
+    ? "1px solid rgba(167, 139, 250, 0.8)"
+    : mining
+      ? "1px solid rgba(245, 158, 11, 0.8)"
+      : "1px solid rgba(167, 139, 250, 0.4)";
+
+  const boxShadow = pending
+    ? "0 0 50px rgba(124,58,237,0.45), 0 0 90px rgba(124,58,237,0.2)"
+    : mining
+      ? "0 0 50px rgba(245,158,11,0.35), 0 0 80px rgba(124,58,237,0.2)"
+      : "0 0 40px rgba(124,58,237,0.25), 0 0 80px rgba(124,58,237,0.1)";
+
   return (
     <div
-      className="relative h-[420px] w-[320px] select-none rounded-3xl border border-[color:var(--border)] p-6 shadow-[var(--shadow-elev),var(--shadow-purple)] transition-transform duration-700"
+      className={`friend-veiled-card ${pending ? "is-pending" : ""} ${mining ? "is-mining" : ""}`}
       style={{
-        background: "var(--gradient-card-back)",
-        transform: flipped ? "rotateY(180deg)" : undefined,
+        width: "320px",
+        height: "420px",
+        border,
+        boxShadow,
       }}
     >
-      {/* Decorative top row */}
-      <div className="mb-6 flex justify-between text-[color:var(--accent)] opacity-70">
-        {["✦", "·", "✦", "·", "✦", "·", "✦", "·", "✦"].map((s, i) => (
-          <span key={i} className="text-xs">{s}</span>
-        ))}
-      </div>
-
-      {/* Center frame */}
-      <div className="flex h-[260px] items-center justify-center">
-        <div
-          className={`flex size-40 items-center justify-center rounded-2xl border-2 border-[color:var(--accent)]/40 bg-[color:var(--background)]/40 backdrop-blur-sm ${
-            loading ? "animate-pulse-glow" : "animate-float"
-          }`}
-        >
-          {loading ? (
-            <span className="size-10 animate-spin-slow rounded-full border-4 border-[color:var(--amber)] border-t-transparent" />
-          ) : (
-            <span className="text-display text-7xl text-[color:var(--accent)]">?</span>
-          )}
+      <div className="veiled-top">+ · + · + · +</div>
+      <div className="veiled-center-wrap">
+        <div className="veiled-center-box">
+          <span className="veiled-question">?</span>
         </div>
       </div>
-
-      {/* Footer */}
-      <div className="absolute bottom-6 left-6 right-6 text-center">
-        <p className="text-display text-xs uppercase tracking-[0.3em] text-[color:var(--muted-foreground)]">
-          Friend Zone
-        </p>
-        <p className="mt-1 text-[10px] uppercase tracking-widest text-[color:var(--muted-foreground)] opacity-60">
-          Ritual · Chain 1979
-        </p>
+      <div className="veiled-bottom">
+        <p>FRIEND ZONE</p>
+        <p>RITUAL · CHAIN 1979</p>
       </div>
     </div>
   );

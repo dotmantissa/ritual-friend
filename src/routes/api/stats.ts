@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { totalPairings } from "@/lib/pairings";
 import { getAvailableCount } from "@/lib/pool";
 
 const corsHeaders = {
@@ -7,15 +8,18 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "Content-Type",
 };
 
-export const Route = createFileRoute("/api/members/available")({
+export const Route = createFileRoute("/api/stats")({
   server: {
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers: corsHeaders }),
-      GET: async () => {
-        return new Response(JSON.stringify({ count: getAvailableCount() }), {
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        });
-      },
+      GET: async () =>
+        new Response(
+          JSON.stringify({
+            totalPairings: totalPairings(),
+            availableCount: getAvailableCount(),
+          }),
+          { headers: { "Content-Type": "application/json", ...corsHeaders } }
+        ),
     },
   },
 });

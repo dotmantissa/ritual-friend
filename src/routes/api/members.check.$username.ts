@@ -31,9 +31,12 @@ export const Route = createFileRoute("/api/members/check/$username")({
             JSON.stringify({
               status: "assigned_to_seeker",
               seekerUsername: assigned.pairing.seekerUsername,
-              assignedFriend: {
+              friend: {
                 username: assigned.pairing.assignedUsername,
-                avatar_url: assigned.pairing.assignedAvatarUrl || getMemberByUsername(assigned.pairing.assignedUsername)?.avatar_url || "",
+                avatar_url:
+                  assigned.pairing.assignedAvatarUrl ||
+                  getMemberByUsername(assigned.pairing.assignedUsername)?.avatar_url ||
+                  "",
                 quote: assigned.pairing.quote,
               },
             }),
@@ -46,9 +49,10 @@ export const Route = createFileRoute("/api/members/check/$username")({
           return new Response(
             JSON.stringify({
               status: "already_paired",
-              assignedFriend: {
+              friend: {
                 username: seeker.assignedUsername,
-                avatar_url: seeker.assignedAvatarUrl || getMemberByUsername(seeker.assignedUsername)?.avatar_url || "",
+                avatar_url:
+                  seeker.assignedAvatarUrl || getMemberByUsername(seeker.assignedUsername)?.avatar_url || "",
                 quote: seeker.quote,
               },
             }),

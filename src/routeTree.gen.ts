@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiStatsRouteImport } from './routes/api/stats'
 import { Route as ApiMembersRouteImport } from './routes/api/members'
 import { Route as ApiClaimRouteImport } from './routes/api/claim'
 import { Route as ApiPairingsExportRouteImport } from './routes/api/pairings.export'
@@ -20,6 +21,11 @@ import { Route as ApiMembersAssignmentWalletRouteImport } from './routes/api/mem
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiStatsRoute = ApiStatsRouteImport.update({
+  id: '/api/stats',
+  path: '/api/stats',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiMembersRoute = ApiMembersRouteImport.update({
@@ -58,6 +64,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/api/claim': typeof ApiClaimRoute
   '/api/members': typeof ApiMembersRouteWithChildren
+  '/api/stats': typeof ApiStatsRoute
   '/api/members/available': typeof ApiMembersAvailableRoute
   '/api/pairings/export': typeof ApiPairingsExportRoute
   '/api/members/assignment/$wallet': typeof ApiMembersAssignmentWalletRoute
@@ -67,6 +74,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/api/claim': typeof ApiClaimRoute
   '/api/members': typeof ApiMembersRouteWithChildren
+  '/api/stats': typeof ApiStatsRoute
   '/api/members/available': typeof ApiMembersAvailableRoute
   '/api/pairings/export': typeof ApiPairingsExportRoute
   '/api/members/assignment/$wallet': typeof ApiMembersAssignmentWalletRoute
@@ -77,6 +85,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/api/claim': typeof ApiClaimRoute
   '/api/members': typeof ApiMembersRouteWithChildren
+  '/api/stats': typeof ApiStatsRoute
   '/api/members/available': typeof ApiMembersAvailableRoute
   '/api/pairings/export': typeof ApiPairingsExportRoute
   '/api/members/assignment/$wallet': typeof ApiMembersAssignmentWalletRoute
@@ -88,6 +97,7 @@ export interface FileRouteTypes {
     | '/'
     | '/api/claim'
     | '/api/members'
+    | '/api/stats'
     | '/api/members/available'
     | '/api/pairings/export'
     | '/api/members/assignment/$wallet'
@@ -97,6 +107,7 @@ export interface FileRouteTypes {
     | '/'
     | '/api/claim'
     | '/api/members'
+    | '/api/stats'
     | '/api/members/available'
     | '/api/pairings/export'
     | '/api/members/assignment/$wallet'
@@ -106,6 +117,7 @@ export interface FileRouteTypes {
     | '/'
     | '/api/claim'
     | '/api/members'
+    | '/api/stats'
     | '/api/members/available'
     | '/api/pairings/export'
     | '/api/members/assignment/$wallet'
@@ -116,6 +128,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ApiClaimRoute: typeof ApiClaimRoute
   ApiMembersRoute: typeof ApiMembersRouteWithChildren
+  ApiStatsRoute: typeof ApiStatsRoute
   ApiPairingsExportRoute: typeof ApiPairingsExportRoute
 }
 
@@ -126,6 +139,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/stats': {
+      id: '/api/stats'
+      path: '/api/stats'
+      fullPath: '/api/stats'
+      preLoaderRoute: typeof ApiStatsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/members': {
@@ -193,6 +213,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ApiClaimRoute: ApiClaimRoute,
   ApiMembersRoute: ApiMembersRouteWithChildren,
+  ApiStatsRoute: ApiStatsRoute,
   ApiPairingsExportRoute: ApiPairingsExportRoute,
 }
 export const routeTree = rootRouteImport

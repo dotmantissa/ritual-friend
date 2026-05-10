@@ -45,3 +45,9 @@ lerna-debug.log*
 # Project local helpers
 .codex
 .vercel
+
+# Foundry artifacts
+contracts/cache/
+contracts/out/
+contracts/broadcast/
+contracts/foundry.lock
