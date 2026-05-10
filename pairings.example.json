@@ -1,4 +1,5 @@
 {
-  "paired": {},
-  "claimed_by_username": []
+  "byWallet": {},
+  "claimedUsernames": [],
+  "claimedAsSeeker": []
 }

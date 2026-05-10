@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { exportPairings } from "@/lib/pool";
+import { exportAll } from "@/lib/pairings";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,7 +12,7 @@ export const Route = createFileRoute("/api/pairings/export")({
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers: corsHeaders }),
       GET: async () => {
-        return new Response(JSON.stringify(exportPairings(), null, 2), {
+        return new Response(JSON.stringify(exportAll(), null, 2), {
           headers: {
             "Content-Type": "application/json",
             "Content-Disposition": "attachment; filename=pairings.export.json",

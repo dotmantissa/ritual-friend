@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { getWalletAssignment } from "@/lib/pool";
+import { getPairingByWallet } from "@/lib/pairings";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,15 +12,20 @@ export const Route = createFileRoute("/api/members/assignment/$wallet")({
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers: corsHeaders }),
       GET: async ({ params }) => {
-        const assignment = getWalletAssignment(params.wallet);
-        if (!assignment) {
+        const pairing = getPairingByWallet(params.wallet);
+        if (!pairing) {
           return new Response(JSON.stringify({ assigned: false }), {
             headers: { "Content-Type": "application/json", ...corsHeaders },
           });
         }
-        return new Response(JSON.stringify(assignment), {
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        });
+        return new Response(
+          JSON.stringify({
+            username: pairing.assignedUsername,
+            avatar_url: pairing.assignedAvatarUrl,
+            quote: pairing.quote,
+          }),
+          { headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
       },
     },
   },

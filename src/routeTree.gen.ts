@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiMembersRouteImport } from './routes/api/members'
 import { Route as ApiMembersAvailableRouteImport } from './routes/api/members.available'
 import { Route as ApiMembersAssignmentWalletRouteImport } from './routes/api/members.assignment.$wallet'
+import { Route as ApiMembersCheckUsernameRouteImport } from './routes/api/members.check.$username'
 import { Route as ApiClaimRouteImport } from './routes/api/claim'
 import { Route as ApiPairingsExportRouteImport } from './routes/api/pairings.export'
 
@@ -36,6 +37,11 @@ const ApiMembersAssignmentWalletRoute = ApiMembersAssignmentWalletRouteImport.up
   path: '/assignment/$wallet',
   getParentRoute: () => ApiMembersRoute,
 } as any)
+const ApiMembersCheckUsernameRoute = ApiMembersCheckUsernameRouteImport.update({
+  id: '/check/$username',
+  path: '/check/$username',
+  getParentRoute: () => ApiMembersRoute,
+} as any)
 const ApiClaimRoute = ApiClaimRouteImport.update({
   id: '/api/claim',
   path: '/api/claim',
@@ -54,6 +60,7 @@ export interface FileRoutesByFullPath {
   '/api/pairings/export': typeof ApiPairingsExportRoute
   '/api/members/available': typeof ApiMembersAvailableRoute
   '/api/members/assignment/$wallet': typeof ApiMembersAssignmentWalletRoute
+  '/api/members/check/$username': typeof ApiMembersCheckUsernameRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -62,6 +69,7 @@ export interface FileRoutesByTo {
   '/api/pairings/export': typeof ApiPairingsExportRoute
   '/api/members/available': typeof ApiMembersAvailableRoute
   '/api/members/assignment/$wallet': typeof ApiMembersAssignmentWalletRoute
+  '/api/members/check/$username': typeof ApiMembersCheckUsernameRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -71,6 +79,7 @@ export interface FileRoutesById {
   '/api/pairings/export': typeof ApiPairingsExportRoute
   '/api/members/available': typeof ApiMembersAvailableRoute
   '/api/members/assignment/$wallet': typeof ApiMembersAssignmentWalletRoute
+  '/api/members/check/$username': typeof ApiMembersCheckUsernameRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -81,6 +90,7 @@ export interface FileRouteTypes {
     | '/api/pairings/export'
     | '/api/members/available'
     | '/api/members/assignment/$wallet'
+    | '/api/members/check/$username'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -89,6 +99,7 @@ export interface FileRouteTypes {
     | '/api/pairings/export'
     | '/api/members/available'
     | '/api/members/assignment/$wallet'
+    | '/api/members/check/$username'
   id:
     | '__root__'
     | '/'
@@ -97,6 +108,7 @@ export interface FileRouteTypes {
     | '/api/pairings/export'
     | '/api/members/available'
     | '/api/members/assignment/$wallet'
+    | '/api/members/check/$username'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -143,6 +155,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiMembersAssignmentWalletRouteImport
       parentRoute: typeof ApiMembersRoute
     }
+    '/api/members/check/$username': {
+      id: '/api/members/check/$username'
+      path: '/check/$username'
+      fullPath: '/api/members/check/$username'
+      preLoaderRoute: typeof ApiMembersCheckUsernameRouteImport
+      parentRoute: typeof ApiMembersRoute
+    }
     '/api/pairings/export': {
       id: '/api/pairings/export'
       path: '/api/pairings/export'
@@ -156,11 +175,13 @@ declare module '@tanstack/react-router' {
 interface ApiMembersRouteChildren {
   ApiMembersAvailableRoute: typeof ApiMembersAvailableRoute
   ApiMembersAssignmentWalletRoute: typeof ApiMembersAssignmentWalletRoute
+  ApiMembersCheckUsernameRoute: typeof ApiMembersCheckUsernameRoute
 }
 
 const ApiMembersRouteChildren: ApiMembersRouteChildren = {
   ApiMembersAvailableRoute: ApiMembersAvailableRoute,
   ApiMembersAssignmentWalletRoute: ApiMembersAssignmentWalletRoute,
+  ApiMembersCheckUsernameRoute: ApiMembersCheckUsernameRoute,
 }
 
 const ApiMembersRouteWithChildren = ApiMembersRoute._addFileChildren(
