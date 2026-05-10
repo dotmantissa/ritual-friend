@@ -11,11 +11,11 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiMembersRouteImport } from './routes/api/members'
-import { Route as ApiMembersAvailableRouteImport } from './routes/api/members.available'
-import { Route as ApiMembersAssignmentWalletRouteImport } from './routes/api/members.assignment.$wallet'
-import { Route as ApiMembersCheckUsernameRouteImport } from './routes/api/members.check.$username'
 import { Route as ApiClaimRouteImport } from './routes/api/claim'
 import { Route as ApiPairingsExportRouteImport } from './routes/api/pairings.export'
+import { Route as ApiMembersAvailableRouteImport } from './routes/api/members.available'
+import { Route as ApiMembersCheckUsernameRouteImport } from './routes/api/members.check.$username'
+import { Route as ApiMembersAssignmentWalletRouteImport } from './routes/api/members.assignment.$wallet'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -27,21 +27,6 @@ const ApiMembersRoute = ApiMembersRouteImport.update({
   path: '/api/members',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiMembersAvailableRoute = ApiMembersAvailableRouteImport.update({
-  id: '/available',
-  path: '/available',
-  getParentRoute: () => ApiMembersRoute,
-} as any)
-const ApiMembersAssignmentWalletRoute = ApiMembersAssignmentWalletRouteImport.update({
-  id: '/assignment/$wallet',
-  path: '/assignment/$wallet',
-  getParentRoute: () => ApiMembersRoute,
-} as any)
-const ApiMembersCheckUsernameRoute = ApiMembersCheckUsernameRouteImport.update({
-  id: '/check/$username',
-  path: '/check/$username',
-  getParentRoute: () => ApiMembersRoute,
-} as any)
 const ApiClaimRoute = ApiClaimRouteImport.update({
   id: '/api/claim',
   path: '/api/claim',
@@ -52,13 +37,29 @@ const ApiPairingsExportRoute = ApiPairingsExportRouteImport.update({
   path: '/api/pairings/export',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiMembersAvailableRoute = ApiMembersAvailableRouteImport.update({
+  id: '/available',
+  path: '/available',
+  getParentRoute: () => ApiMembersRoute,
+} as any)
+const ApiMembersCheckUsernameRoute = ApiMembersCheckUsernameRouteImport.update({
+  id: '/check/$username',
+  path: '/check/$username',
+  getParentRoute: () => ApiMembersRoute,
+} as any)
+const ApiMembersAssignmentWalletRoute =
+  ApiMembersAssignmentWalletRouteImport.update({
+    id: '/assignment/$wallet',
+    path: '/assignment/$wallet',
+    getParentRoute: () => ApiMembersRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/api/claim': typeof ApiClaimRoute
   '/api/members': typeof ApiMembersRouteWithChildren
-  '/api/pairings/export': typeof ApiPairingsExportRoute
   '/api/members/available': typeof ApiMembersAvailableRoute
+  '/api/pairings/export': typeof ApiPairingsExportRoute
   '/api/members/assignment/$wallet': typeof ApiMembersAssignmentWalletRoute
   '/api/members/check/$username': typeof ApiMembersCheckUsernameRoute
 }
@@ -66,8 +67,8 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/api/claim': typeof ApiClaimRoute
   '/api/members': typeof ApiMembersRouteWithChildren
-  '/api/pairings/export': typeof ApiPairingsExportRoute
   '/api/members/available': typeof ApiMembersAvailableRoute
+  '/api/pairings/export': typeof ApiPairingsExportRoute
   '/api/members/assignment/$wallet': typeof ApiMembersAssignmentWalletRoute
   '/api/members/check/$username': typeof ApiMembersCheckUsernameRoute
 }
@@ -76,8 +77,8 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/api/claim': typeof ApiClaimRoute
   '/api/members': typeof ApiMembersRouteWithChildren
-  '/api/pairings/export': typeof ApiPairingsExportRoute
   '/api/members/available': typeof ApiMembersAvailableRoute
+  '/api/pairings/export': typeof ApiPairingsExportRoute
   '/api/members/assignment/$wallet': typeof ApiMembersAssignmentWalletRoute
   '/api/members/check/$username': typeof ApiMembersCheckUsernameRoute
 }
@@ -87,8 +88,8 @@ export interface FileRouteTypes {
     | '/'
     | '/api/claim'
     | '/api/members'
-    | '/api/pairings/export'
     | '/api/members/available'
+    | '/api/pairings/export'
     | '/api/members/assignment/$wallet'
     | '/api/members/check/$username'
   fileRoutesByTo: FileRoutesByTo
@@ -96,8 +97,8 @@ export interface FileRouteTypes {
     | '/'
     | '/api/claim'
     | '/api/members'
-    | '/api/pairings/export'
     | '/api/members/available'
+    | '/api/pairings/export'
     | '/api/members/assignment/$wallet'
     | '/api/members/check/$username'
   id:
@@ -105,8 +106,8 @@ export interface FileRouteTypes {
     | '/'
     | '/api/claim'
     | '/api/members'
-    | '/api/pairings/export'
     | '/api/members/available'
+    | '/api/pairings/export'
     | '/api/members/assignment/$wallet'
     | '/api/members/check/$username'
   fileRoutesById: FileRoutesById
@@ -127,6 +128,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/members': {
+      id: '/api/members'
+      path: '/api/members'
+      fullPath: '/api/members'
+      preLoaderRoute: typeof ApiMembersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/claim': {
       id: '/api/claim'
       path: '/api/claim'
@@ -134,11 +142,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiClaimRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/members': {
-      id: '/api/members'
-      path: '/api/members'
-      fullPath: '/api/members'
-      preLoaderRoute: typeof ApiMembersRouteImport
+    '/api/pairings/export': {
+      id: '/api/pairings/export'
+      path: '/api/pairings/export'
+      fullPath: '/api/pairings/export'
+      preLoaderRoute: typeof ApiPairingsExportRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/members/available': {
@@ -148,13 +156,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiMembersAvailableRouteImport
       parentRoute: typeof ApiMembersRoute
     }
-    '/api/members/assignment/$wallet': {
-      id: '/api/members/assignment/$wallet'
-      path: '/assignment/$wallet'
-      fullPath: '/api/members/assignment/$wallet'
-      preLoaderRoute: typeof ApiMembersAssignmentWalletRouteImport
-      parentRoute: typeof ApiMembersRoute
-    }
     '/api/members/check/$username': {
       id: '/api/members/check/$username'
       path: '/check/$username'
@@ -162,12 +163,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiMembersCheckUsernameRouteImport
       parentRoute: typeof ApiMembersRoute
     }
-    '/api/pairings/export': {
-      id: '/api/pairings/export'
-      path: '/api/pairings/export'
-      fullPath: '/api/pairings/export'
-      preLoaderRoute: typeof ApiPairingsExportRouteImport
-      parentRoute: typeof rootRouteImport
+    '/api/members/assignment/$wallet': {
+      id: '/api/members/assignment/$wallet'
+      path: '/assignment/$wallet'
+      fullPath: '/api/members/assignment/$wallet'
+      preLoaderRoute: typeof ApiMembersAssignmentWalletRouteImport
+      parentRoute: typeof ApiMembersRoute
     }
   }
 }
@@ -197,3 +198,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

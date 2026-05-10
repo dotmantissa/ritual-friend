@@ -61,6 +61,10 @@ export function FriendZonePage() {
     });
   }, []);
 
+  const hasSubmittedUsername = seekerUsername.length > 0;
+  const canShowWalletConnect = hasSubmittedUsername && step !== "revealed" && !isConnected;
+  const canShowReveal = hasSubmittedUsername && step !== "revealed" && isConnected;
+
   const handleUsernameSubmit = async () => {
     const username = normalizeUsername(usernameInput);
     if (!username) {
@@ -219,33 +223,39 @@ export function FriendZonePage() {
 
           {status && <p className="mt-6 max-w-2xl rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] px-4 py-3 text-sm">{status}</p>}
 
-          {step === "username" && (
-            <div className="mt-8 w-full max-w-lg">
+          {step !== "revealed" && (
+            <form
+              className="mt-8 w-full max-w-lg"
+              onSubmit={(e) => {
+                e.preventDefault();
+                void handleUsernameSubmit();
+              }}
+            >
               <input
                 value={usernameInput}
                 onChange={(e) => setUsernameInput(e.target.value)}
                 placeholder="your Discord username"
                 className="w-full rounded-full border border-[color:var(--border)] bg-[color:var(--surface)] px-6 py-4 text-center outline-none transition focus:border-[#7C3AED] focus:shadow-[0_0_22px_rgba(124,58,237,0.45)]"
               />
-              <button onClick={handleUsernameSubmit} disabled={availableCount <= 0} className="mt-5 rounded-full bg-[var(--gradient-amber)] px-8 py-3 text-sm font-bold uppercase tracking-wider text-[color:var(--background)] disabled:opacity-50">
+              <button type="submit" disabled={availableCount <= 0} className="mt-5 rounded-full bg-[var(--gradient-amber)] px-8 py-3 text-sm font-bold uppercase tracking-wider text-[color:var(--background)] disabled:opacity-50">
                 Find My Friend →
               </button>
               <p className="mt-5 text-xs text-[color:var(--muted-foreground)]">{totalPairings} friendships made</p>
-            </div>
+            </form>
           )}
 
-          {step === "wallet" && (
+          {canShowWalletConnect && (
             <div className="mt-8">
               <p className="mb-4">Great, @{seekerUsername}! Connect your wallet to reveal your Ritual friend.</p>
               <WalletConnect />
             </div>
           )}
 
-          {step === "ready" && (
+          {canShowReveal && (
             <div className="mt-8 flex flex-col items-center gap-6">
               <VeiledCard loading={finding} />
               <button onClick={handleReveal} disabled={finding} className="rounded-full bg-[var(--gradient-amber)] px-8 py-3 text-sm font-bold uppercase tracking-wider text-[color:var(--background)]">
-                {finding ? "Revealing..." : "Find My Friend →"}
+                {finding ? "Revealing..." : "Summon Friend →"}
               </button>
               <p className="text-xs text-[color:var(--muted-foreground)]">Sign a transaction on Ritual Chain to reveal your match.</p>
             </div>
