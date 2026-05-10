@@ -62,8 +62,8 @@ export function FriendZonePage() {
   }, []);
 
   const hasSubmittedUsername = seekerUsername.length > 0;
-  const canShowWalletConnect = hasSubmittedUsername && step !== "revealed" && !isConnected;
-  const canShowReveal = hasSubmittedUsername && step !== "revealed" && isConnected;
+  const canShowWalletConnect = step !== "revealed";
+  const canShowReveal = step !== "revealed";
 
   const handleUsernameSubmit = async () => {
     const username = normalizeUsername(usernameInput);
@@ -246,7 +246,11 @@ export function FriendZonePage() {
 
           {canShowWalletConnect && (
             <div className="mt-8">
-              <p className="mb-4">Great, @{seekerUsername}! Connect your wallet to reveal your Ritual friend.</p>
+              <p className="mb-4">
+                {hasSubmittedUsername
+                  ? `Great, @${seekerUsername}! Connect your wallet to reveal your Ritual friend.`
+                  : "Enter your username, then connect your wallet to continue."}
+              </p>
               <WalletConnect />
             </div>
           )}
@@ -254,10 +258,20 @@ export function FriendZonePage() {
           {canShowReveal && (
             <div className="mt-8 flex flex-col items-center gap-6">
               <VeiledCard loading={finding} />
-              <button onClick={handleReveal} disabled={finding} className="rounded-full bg-[var(--gradient-amber)] px-8 py-3 text-sm font-bold uppercase tracking-wider text-[color:var(--background)]">
+              <button
+                onClick={handleReveal}
+                disabled={finding || !hasSubmittedUsername || !isConnected}
+                className="rounded-full bg-[var(--gradient-amber)] px-8 py-3 text-sm font-bold uppercase tracking-wider text-[color:var(--background)] disabled:opacity-50"
+              >
                 {finding ? "Revealing..." : "Summon Friend →"}
               </button>
-              <p className="text-xs text-[color:var(--muted-foreground)]">Sign a transaction on Ritual Chain to reveal your match.</p>
+              <p className="text-xs text-[color:var(--muted-foreground)]">
+                {!hasSubmittedUsername
+                  ? "Step 1: Enter username first."
+                  : !isConnected
+                    ? "Step 2: Connect wallet to enable summon."
+                    : "Step 3: Sign a transaction on Ritual Chain to reveal your match."}
+              </p>
             </div>
           )}
 
