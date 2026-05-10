@@ -18,7 +18,7 @@ export const FRIEND_ZONE_ABI = [
       { name: "seeker", type: "address", indexed: true },
       { name: "friendIndex", type: "uint256", indexed: true },
       { name: "memberCount", type: "uint256", indexed: false },
-      { name: "revealNonce", type: "uint256", indexed: false },
+      { name: "nonce", type: "uint256", indexed: false },
     ],
   },
   {
