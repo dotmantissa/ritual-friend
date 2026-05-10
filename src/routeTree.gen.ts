@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiStatsRouteImport } from './routes/api/stats'
 import { Route as ApiMembersRouteImport } from './routes/api/members'
 import { Route as ApiClaimRouteImport } from './routes/api/claim'
+import { Route as ApiProxyAvatarRouteImport } from './routes/api/proxy.avatar'
 import { Route as ApiPairingsExportRouteImport } from './routes/api/pairings.export'
 import { Route as ApiMembersAvailableRouteImport } from './routes/api/members.available'
 import { Route as ApiMembersCheckUsernameRouteImport } from './routes/api/members.check.$username'
@@ -36,6 +37,11 @@ const ApiMembersRoute = ApiMembersRouteImport.update({
 const ApiClaimRoute = ApiClaimRouteImport.update({
   id: '/api/claim',
   path: '/api/claim',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiProxyAvatarRoute = ApiProxyAvatarRouteImport.update({
+  id: '/api/proxy/avatar',
+  path: '/api/proxy/avatar',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPairingsExportRoute = ApiPairingsExportRouteImport.update({
@@ -67,6 +73,7 @@ export interface FileRoutesByFullPath {
   '/api/stats': typeof ApiStatsRoute
   '/api/members/available': typeof ApiMembersAvailableRoute
   '/api/pairings/export': typeof ApiPairingsExportRoute
+  '/api/proxy/avatar': typeof ApiProxyAvatarRoute
   '/api/members/assignment/$wallet': typeof ApiMembersAssignmentWalletRoute
   '/api/members/check/$username': typeof ApiMembersCheckUsernameRoute
 }
@@ -77,6 +84,7 @@ export interface FileRoutesByTo {
   '/api/stats': typeof ApiStatsRoute
   '/api/members/available': typeof ApiMembersAvailableRoute
   '/api/pairings/export': typeof ApiPairingsExportRoute
+  '/api/proxy/avatar': typeof ApiProxyAvatarRoute
   '/api/members/assignment/$wallet': typeof ApiMembersAssignmentWalletRoute
   '/api/members/check/$username': typeof ApiMembersCheckUsernameRoute
 }
@@ -88,6 +96,7 @@ export interface FileRoutesById {
   '/api/stats': typeof ApiStatsRoute
   '/api/members/available': typeof ApiMembersAvailableRoute
   '/api/pairings/export': typeof ApiPairingsExportRoute
+  '/api/proxy/avatar': typeof ApiProxyAvatarRoute
   '/api/members/assignment/$wallet': typeof ApiMembersAssignmentWalletRoute
   '/api/members/check/$username': typeof ApiMembersCheckUsernameRoute
 }
@@ -100,6 +109,7 @@ export interface FileRouteTypes {
     | '/api/stats'
     | '/api/members/available'
     | '/api/pairings/export'
+    | '/api/proxy/avatar'
     | '/api/members/assignment/$wallet'
     | '/api/members/check/$username'
   fileRoutesByTo: FileRoutesByTo
@@ -110,6 +120,7 @@ export interface FileRouteTypes {
     | '/api/stats'
     | '/api/members/available'
     | '/api/pairings/export'
+    | '/api/proxy/avatar'
     | '/api/members/assignment/$wallet'
     | '/api/members/check/$username'
   id:
@@ -120,6 +131,7 @@ export interface FileRouteTypes {
     | '/api/stats'
     | '/api/members/available'
     | '/api/pairings/export'
+    | '/api/proxy/avatar'
     | '/api/members/assignment/$wallet'
     | '/api/members/check/$username'
   fileRoutesById: FileRoutesById
@@ -130,6 +142,7 @@ export interface RootRouteChildren {
   ApiMembersRoute: typeof ApiMembersRouteWithChildren
   ApiStatsRoute: typeof ApiStatsRoute
   ApiPairingsExportRoute: typeof ApiPairingsExportRoute
+  ApiProxyAvatarRoute: typeof ApiProxyAvatarRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -160,6 +173,13 @@ declare module '@tanstack/react-router' {
       path: '/api/claim'
       fullPath: '/api/claim'
       preLoaderRoute: typeof ApiClaimRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/proxy/avatar': {
+      id: '/api/proxy/avatar'
+      path: '/api/proxy/avatar'
+      fullPath: '/api/proxy/avatar'
+      preLoaderRoute: typeof ApiProxyAvatarRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/pairings/export': {
@@ -215,6 +235,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiMembersRoute: ApiMembersRouteWithChildren,
   ApiStatsRoute: ApiStatsRoute,
   ApiPairingsExportRoute: ApiPairingsExportRoute,
+  ApiProxyAvatarRoute: ApiProxyAvatarRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

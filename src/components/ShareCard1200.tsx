@@ -2,6 +2,7 @@ interface ShareCard1200Props {
   username: string;
   avatarUrl?: string;
   quote: string;
+  onAvatarLoad?: () => void;
 }
 
 const FALLBACK_COLORS = ["#7C3AED", "#F59E0B", "#10B981", "#3B82F6", "#EF4444"];
@@ -10,7 +11,7 @@ function colorFor(username: string): string {
   return FALLBACK_COLORS[username.charCodeAt(0) % FALLBACK_COLORS.length] ?? FALLBACK_COLORS[0];
 }
 
-export function ShareCard1200({ username, avatarUrl, quote }: ShareCard1200Props) {
+export function ShareCard1200({ username, avatarUrl, quote, onAvatarLoad }: ShareCard1200Props) {
   const safeQuote = quote.length > 260 ? `${quote.slice(0, 257)}...` : quote;
   const fontSize = username.length > 12 ? 48 : 64;
 
@@ -20,9 +21,6 @@ export function ShareCard1200({ username, avatarUrl, quote }: ShareCard1200Props
       style={{
         width: "1200px",
         height: "630px",
-        position: "absolute",
-        left: "-9999px",
-        top: "0px",
         overflow: "hidden",
         background: "radial-gradient(ellipse at 20% 20%, #2D1B69 0%, #0D0D1A 55%, #1A0A2E 100%)",
         border: "1px solid rgba(124,58,237,0.35)",
@@ -89,7 +87,7 @@ export function ShareCard1200({ username, avatarUrl, quote }: ShareCard1200Props
             }}
           >
             {avatarUrl ? (
-              <img src={avatarUrl} alt={username} style={{ width: "200px", height: "200px", objectFit: "cover" }} />
+              <img src={avatarUrl} alt={username} style={{ width: "200px", height: "200px", objectFit: "cover" }} onLoad={onAvatarLoad} />
             ) : (
               <span style={{ color: "#FFFFFF", fontSize: "80px", fontWeight: 800, textTransform: "uppercase" }}>{username[0]}</span>
             )}

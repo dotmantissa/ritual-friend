@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
 import { ParticlesBg } from "@/components/ParticlesBg";
 import { NetworkGuard } from "@/components/NetworkGuard";
 import { WalletConnect } from "@/components/WalletConnect";
@@ -23,15 +24,41 @@ export function FriendZonePage() {
     justRevealed,
     isConnected,
     submitUsername,
+    checkingUsername,
     summonFriend,
   } = useFriendZone();
+
+  const [imageReady, setImageReady] = useState(false);
+  const [dotPhase, setDotPhase] = useState(0);
+
+  useEffect(() => {
+    if (revealState !== "mining") return;
+    const id = setInterval(() => setDotPhase((n) => (n + 1) % 4), 400);
+    return () => clearInterval(id);
+  }, [revealState]);
+
+  useEffect(() => {
+    setImageReady(!assignedFriend?.avatar_url);
+  }, [assignedFriend?.avatar_url]);
+
+  const proxiedAvatar = useMemo(() => {
+    if (!assignedFriend?.avatar_url) return undefined;
+    return `${window.location.origin}/api/proxy/avatar?url=${encodeURIComponent(assignedFriend.avatar_url)}`;
+  }, [assignedFriend?.avatar_url]);
 
   const downloadShareCard = async () => {
     if (!assignedFriend) return;
     const target = document.getElementById("share-card-1200");
-    if (!target) return;
+    if (!target || !imageReady) return;
+    await new Promise((r) => setTimeout(r, 200));
     const mod = await import("html-to-image");
-    const dataUrl = await mod.toPng(target, { pixelRatio: 2, cacheBust: true });
+    const dataUrl = await mod.toPng(target, {
+      width: 1200,
+      height: 630,
+      pixelRatio: 2,
+      skipFonts: false,
+      cacheBust: true,
+    });
     const a = document.createElement("a");
     a.href = dataUrl;
     a.download = `ritual-friend-${assignedFriend.username}-${Date.now()}.png`;
@@ -50,7 +77,28 @@ export function FriendZonePage() {
   return (
     <NetworkGuard>
       <ParticlesBg />
-      {assignedFriend && <ShareCard1200 username={assignedFriend.username} avatarUrl={assignedFriend.avatar_url} quote={assignedFriend.quote} />}
+      {assignedFriend && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "1200px",
+            height: "630px",
+            opacity: 0,
+            pointerEvents: "none",
+            zIndex: -1,
+            overflow: "hidden",
+          }}
+        >
+          <ShareCard1200
+            username={assignedFriend.username}
+            avatarUrl={proxiedAvatar}
+            quote={assignedFriend.quote}
+            onAvatarLoad={() => setImageReady(true)}
+          />
+        </div>
+      )}
 
       <main className="relative z-10 mx-auto flex min-h-screen max-w-6xl flex-col px-6 py-8">
         {page === "username" && (
@@ -81,8 +129,8 @@ export function FriendZonePage() {
                 placeholder="enter your discord username..."
                 className="w-full rounded-full border border-[color:var(--border)] bg-[color:var(--surface)] px-6 py-4 text-center outline-none transition focus:border-[#7C3AED] focus:shadow-[0_0_22px_rgba(124,58,237,0.45)]"
               />
-              <button type="submit" className="mt-5 rounded-full bg-[var(--gradient-amber)] px-8 py-3 text-sm font-bold uppercase tracking-wider text-[color:var(--background)]">
-                Find My Friend →
+              <button type="submit" disabled={checkingUsername} className="find-friend-btn">
+                {checkingUsername ? "CHECKING..." : "FIND MY FRIEND →"}
               </button>
               <p className="mt-5 text-xs text-[color:var(--muted-foreground)]">{totalPairings} friendships made on-chain</p>
             </form>
@@ -116,15 +164,17 @@ export function FriendZonePage() {
               )}
 
               {!assignedFriend && isConnected && (
-                <div className="w-full max-w-lg rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] p-5 text-center">
-                  <p className="text-sm">Step 2: Sign a transaction to reveal your Ritual friend</p>
-                  <button
-                    onClick={summonFriend}
-                    className="mt-4 rounded-full bg-[var(--gradient-amber)] px-8 py-3 text-sm font-bold uppercase tracking-wider text-[color:var(--background)]"
-                  >
-                    {revealState === "pending_tx" ? "Awaiting Signature..." : revealState === "mining" ? "Mining..." : "Summon My Friend →"}
-                  </button>
-                </div>
+                <button
+                  onClick={summonFriend}
+                  disabled={revealState !== "ready"}
+                  className="summon-btn"
+                >
+                  {revealState === "pending_tx"
+                    ? "CONFIRM IN WALLET..."
+                    : revealState === "mining"
+                      ? `REVEALING${".".repeat(dotPhase + 1)}`
+                      : "SUMMON MY FRIEND →"}
+                </button>
               )}
 
               {status && <p className="max-w-2xl rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] px-4 py-3 text-sm">{status}</p>}
@@ -132,7 +182,9 @@ export function FriendZonePage() {
               {assignedFriend && (
                 <div className="flex flex-col items-center gap-3">
                   <div className="flex flex-wrap justify-center gap-3">
-                    <button onClick={downloadShareCard} className="rounded-full border border-[color:var(--border)] px-4 py-2 text-xs animate-fade-in-up [animation-delay:0.1s]">⬇ Download Card</button>
+                    <button onClick={downloadShareCard} disabled={!imageReady} className="rounded-full border border-[color:var(--border)] px-4 py-2 text-xs animate-fade-in-up [animation-delay:0.1s] disabled:opacity-60">
+                      {!imageReady ? "PREPARING CARD..." : "⬇ Download Card"}
+                    </button>
                     <button onClick={shareToX} className="rounded-full border border-[color:var(--border)] px-4 py-2 text-xs animate-fade-in-up [animation-delay:0.2s]">Share on 𝕏</button>
                   </div>
                 </div>

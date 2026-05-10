@@ -177,10 +177,10 @@
 }
 
 @keyframes glowPulse {
-  0%, 100% { filter: drop-shadow(0 0 12px rgba(167,139,250,0.4)); }
+  0%, 100% { filter: drop-shadow(0 0 12px rgba(16,185,129,0.5)); }
   50% {
-    filter: drop-shadow(0 0 28px rgba(167,139,250,0.9))
-            drop-shadow(0 0 50px rgba(124,58,237,0.4));
+    filter: drop-shadow(0 0 32px rgba(16,185,129,1.0))
+            drop-shadow(0 0 60px rgba(5,150,105,0.5));
   }
 }
 
@@ -199,12 +199,68 @@
   font-weight: 900;
   letter-spacing: 0.25em;
   line-height: 1;
-  background: linear-gradient(135deg, #FFFFFF 0%, #A78BFA 40%, #7C3AED 70%, #A78BFA 100%);
+  background: linear-gradient(135deg, #ECFDF5 0%, #6EE7B7 30%, #10B981 60%, #059669 100%);
   background-size: 200% auto;
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   animation: titleShimmer 4s linear infinite, glowPulse 2.5s ease-in-out infinite;
+}
+
+.find-friend-btn {
+  display: block;
+  width: 100%;
+  max-width: 420px;
+  margin: 16px auto 0 auto;
+  padding: 18px 0;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #FFFFFF;
+  background: linear-gradient(135deg, #059669 0%, #10B981 50%, #34D399 100%);
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 0 24px rgba(16,185,129,0.5), 0 0 48px rgba(16,185,129,0.2);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.find-friend-btn:hover {
+  transform: scale(1.03);
+  box-shadow: 0 0 36px rgba(16,185,129,0.7), 0 0 72px rgba(16,185,129,0.3);
+}
+.find-friend-btn:active { transform: scale(0.97); }
+.find-friend-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.summon-btn {
+  display: block;
+  width: 100%;
+  max-width: 340px;
+  margin: 24px auto 0 auto;
+  padding: 20px 0;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #FFFFFF;
+  background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 50%, #FCD34D 100%);
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  box-shadow: 0 0 28px rgba(245,158,11,0.6), 0 0 56px rgba(245,158,11,0.25);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.summon-btn:hover {
+  transform: scale(1.04);
+  box-shadow: 0 0 40px rgba(245,158,11,0.8), 0 0 80px rgba(245,158,11,0.4);
+}
+.summon-btn:active { transform: scale(0.97); }
+.summon-btn:disabled {
+  opacity: 0.8;
+  cursor: not-allowed;
 }
 .title-friendzone {
   margin-top: 4px;

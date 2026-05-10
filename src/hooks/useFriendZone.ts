@@ -29,6 +29,7 @@ export function useFriendZone() {
   const [assignedFriend, setAssignedFriend] = useState<AssignedFriend | null>(null);
   const [totalPairings, setTotalPairings] = useState(0);
   const [justRevealed, setJustRevealed] = useState(false);
+  const [checkingUsername, setCheckingUsername] = useState(false);
 
   const isConfigured = useMemo(
     () => FRIEND_ZONE_DEPLOYED && FRIEND_ZONE_ADDRESS !== "0x0000000000000000000000000000000000000000",
@@ -62,6 +63,7 @@ export function useFriendZone() {
     setSeekerUsername(username);
     setStatus(null);
 
+    setCheckingUsername(true);
     try {
       const res = await fetch(`/api/members/check/${encodeURIComponent(username)}`);
       const data = await res.json();
@@ -88,6 +90,8 @@ export function useFriendZone() {
       setStatus(null);
     } catch {
       setStatus("Could not check username. Try again.");
+    } finally {
+      setCheckingUsername(false);
     }
   };
 
@@ -183,6 +187,7 @@ export function useFriendZone() {
     justRevealed,
     isConnected,
     submitUsername,
+    checkingUsername,
     summonFriend,
   };
 }
