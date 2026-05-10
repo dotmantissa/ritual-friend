@@ -11,9 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiMembersRouteImport } from './routes/api/members'
-import { Route as ApiMembersIndexRouteImport } from './routes/api/members.$index'
-import { Route as ApiAuthDiscordRouteImport } from './routes/api/auth.discord'
-import { Route as ApiAuthDiscordCallbackRouteImport } from './routes/api/auth.discord.callback'
+import { Route as ApiMembersAvailableRouteImport } from './routes/api/members.available'
+import { Route as ApiMembersAssignmentWalletRouteImport } from './routes/api/members.assignment.$wallet'
+import { Route as ApiClaimRouteImport } from './routes/api/claim'
+import { Route as ApiPairingsExportRouteImport } from './routes/api/pairings.export'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -25,72 +26,84 @@ const ApiMembersRoute = ApiMembersRouteImport.update({
   path: '/api/members',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiMembersIndexRoute = ApiMembersIndexRouteImport.update({
-  id: '/$index',
-  path: '/$index',
+const ApiMembersAvailableRoute = ApiMembersAvailableRouteImport.update({
+  id: '/available',
+  path: '/available',
   getParentRoute: () => ApiMembersRoute,
 } as any)
-const ApiAuthDiscordRoute = ApiAuthDiscordRouteImport.update({
-  id: '/api/auth/discord',
-  path: '/api/auth/discord',
+const ApiMembersAssignmentWalletRoute = ApiMembersAssignmentWalletRouteImport.update({
+  id: '/assignment/$wallet',
+  path: '/assignment/$wallet',
+  getParentRoute: () => ApiMembersRoute,
+} as any)
+const ApiClaimRoute = ApiClaimRouteImport.update({
+  id: '/api/claim',
+  path: '/api/claim',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiAuthDiscordCallbackRoute = ApiAuthDiscordCallbackRouteImport.update({
-  id: '/callback',
-  path: '/callback',
-  getParentRoute: () => ApiAuthDiscordRoute,
+const ApiPairingsExportRoute = ApiPairingsExportRouteImport.update({
+  id: '/api/pairings/export',
+  path: '/api/pairings/export',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/api/claim': typeof ApiClaimRoute
   '/api/members': typeof ApiMembersRouteWithChildren
-  '/api/auth/discord': typeof ApiAuthDiscordRouteWithChildren
-  '/api/members/$index': typeof ApiMembersIndexRoute
-  '/api/auth/discord/callback': typeof ApiAuthDiscordCallbackRoute
+  '/api/pairings/export': typeof ApiPairingsExportRoute
+  '/api/members/available': typeof ApiMembersAvailableRoute
+  '/api/members/assignment/$wallet': typeof ApiMembersAssignmentWalletRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/api/claim': typeof ApiClaimRoute
   '/api/members': typeof ApiMembersRouteWithChildren
-  '/api/auth/discord': typeof ApiAuthDiscordRouteWithChildren
-  '/api/members/$index': typeof ApiMembersIndexRoute
-  '/api/auth/discord/callback': typeof ApiAuthDiscordCallbackRoute
+  '/api/pairings/export': typeof ApiPairingsExportRoute
+  '/api/members/available': typeof ApiMembersAvailableRoute
+  '/api/members/assignment/$wallet': typeof ApiMembersAssignmentWalletRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/api/claim': typeof ApiClaimRoute
   '/api/members': typeof ApiMembersRouteWithChildren
-  '/api/auth/discord': typeof ApiAuthDiscordRouteWithChildren
-  '/api/members/$index': typeof ApiMembersIndexRoute
-  '/api/auth/discord/callback': typeof ApiAuthDiscordCallbackRoute
+  '/api/pairings/export': typeof ApiPairingsExportRoute
+  '/api/members/available': typeof ApiMembersAvailableRoute
+  '/api/members/assignment/$wallet': typeof ApiMembersAssignmentWalletRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/api/claim'
     | '/api/members'
-    | '/api/auth/discord'
-    | '/api/members/$index'
-    | '/api/auth/discord/callback'
+    | '/api/pairings/export'
+    | '/api/members/available'
+    | '/api/members/assignment/$wallet'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/api/claim'
     | '/api/members'
-    | '/api/auth/discord'
-    | '/api/members/$index'
-    | '/api/auth/discord/callback'
+    | '/api/pairings/export'
+    | '/api/members/available'
+    | '/api/members/assignment/$wallet'
   id:
     | '__root__'
     | '/'
+    | '/api/claim'
     | '/api/members'
-    | '/api/auth/discord'
-    | '/api/members/$index'
-    | '/api/auth/discord/callback'
+    | '/api/pairings/export'
+    | '/api/members/available'
+    | '/api/members/assignment/$wallet'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ApiClaimRoute: typeof ApiClaimRoute
   ApiMembersRoute: typeof ApiMembersRouteWithChildren
-  ApiAuthDiscordRoute: typeof ApiAuthDiscordRouteWithChildren
+  ApiPairingsExportRoute: typeof ApiPairingsExportRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -102,6 +115,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/claim': {
+      id: '/api/claim'
+      path: '/api/claim'
+      fullPath: '/api/claim'
+      preLoaderRoute: typeof ApiClaimRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/members': {
       id: '/api/members'
       path: '/api/members'
@@ -109,58 +129,49 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiMembersRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/members/$index': {
-      id: '/api/members/$index'
-      path: '/$index'
-      fullPath: '/api/members/$index'
-      preLoaderRoute: typeof ApiMembersIndexRouteImport
+    '/api/members/available': {
+      id: '/api/members/available'
+      path: '/available'
+      fullPath: '/api/members/available'
+      preLoaderRoute: typeof ApiMembersAvailableRouteImport
       parentRoute: typeof ApiMembersRoute
     }
-    '/api/auth/discord': {
-      id: '/api/auth/discord'
-      path: '/api/auth/discord'
-      fullPath: '/api/auth/discord'
-      preLoaderRoute: typeof ApiAuthDiscordRouteImport
-      parentRoute: typeof rootRouteImport
+    '/api/members/assignment/$wallet': {
+      id: '/api/members/assignment/$wallet'
+      path: '/assignment/$wallet'
+      fullPath: '/api/members/assignment/$wallet'
+      preLoaderRoute: typeof ApiMembersAssignmentWalletRouteImport
+      parentRoute: typeof ApiMembersRoute
     }
-    '/api/auth/discord/callback': {
-      id: '/api/auth/discord/callback'
-      path: '/callback'
-      fullPath: '/api/auth/discord/callback'
-      preLoaderRoute: typeof ApiAuthDiscordCallbackRouteImport
-      parentRoute: typeof ApiAuthDiscordRoute
+    '/api/pairings/export': {
+      id: '/api/pairings/export'
+      path: '/api/pairings/export'
+      fullPath: '/api/pairings/export'
+      preLoaderRoute: typeof ApiPairingsExportRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
 
 interface ApiMembersRouteChildren {
-  ApiMembersIndexRoute: typeof ApiMembersIndexRoute
+  ApiMembersAvailableRoute: typeof ApiMembersAvailableRoute
+  ApiMembersAssignmentWalletRoute: typeof ApiMembersAssignmentWalletRoute
 }
 
 const ApiMembersRouteChildren: ApiMembersRouteChildren = {
-  ApiMembersIndexRoute: ApiMembersIndexRoute,
+  ApiMembersAvailableRoute: ApiMembersAvailableRoute,
+  ApiMembersAssignmentWalletRoute: ApiMembersAssignmentWalletRoute,
 }
 
 const ApiMembersRouteWithChildren = ApiMembersRoute._addFileChildren(
   ApiMembersRouteChildren,
 )
 
-interface ApiAuthDiscordRouteChildren {
-  ApiAuthDiscordCallbackRoute: typeof ApiAuthDiscordCallbackRoute
-}
-
-const ApiAuthDiscordRouteChildren: ApiAuthDiscordRouteChildren = {
-  ApiAuthDiscordCallbackRoute: ApiAuthDiscordCallbackRoute,
-}
-
-const ApiAuthDiscordRouteWithChildren = ApiAuthDiscordRoute._addFileChildren(
-  ApiAuthDiscordRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApiClaimRoute: ApiClaimRoute,
   ApiMembersRoute: ApiMembersRouteWithChildren,
-  ApiAuthDiscordRoute: ApiAuthDiscordRouteWithChildren,
+  ApiPairingsExportRoute: ApiPairingsExportRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

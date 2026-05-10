@@ -1,10 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-/// @title FriendZone — Ritual Chain Friend Assignment
-/// @notice Each wallet calls revealFriend(memberCount) to be assigned a deterministic friend.
 contract FriendZone {
-    // ── Events ──────────────────────────────────────────────────────
     event FriendRevealed(
         address indexed seeker,
         uint256 indexed friendIndex,
@@ -12,13 +9,11 @@ contract FriendZone {
         uint256 revealNonce
     );
 
-    // ── Errors ──────────────────────────────────────────────────────
     error MemberCountZero();
     error InsufficientFee();
     error WithdrawFailed();
     error NotOwner();
 
-    // ── State ───────────────────────────────────────────────────────
     address public owner;
     uint256 public revealFee = 0;
     mapping(address => uint256) public revealCount;
@@ -30,8 +25,13 @@ contract FriendZone {
         owner = msg.sender;
     }
 
-    // ── Core ────────────────────────────────────────────────────────
     function revealFriend(uint256 memberCount) external payable returns (uint256 friendIndex) {
+        if (hasRevealed[msg.sender]) {
+            friendIndex = lastFriendIndex[msg.sender];
+            emit FriendRevealed(msg.sender, friendIndex, memberCount, revealCount[msg.sender]);
+            return friendIndex;
+        }
+
         if (memberCount == 0) revert MemberCountZero();
         if (msg.value < revealFee) revert InsufficientFee();
 
@@ -57,7 +57,6 @@ contract FriendZone {
         emit FriendRevealed(msg.sender, friendIndex, memberCount, nonce);
     }
 
-    // ── Views ───────────────────────────────────────────────────────
     function getRevealInfo(address seeker)
         external
         view
@@ -66,7 +65,6 @@ contract FriendZone {
         return (hasRevealed[seeker], lastFriendIndex[seeker], revealCount[seeker]);
     }
 
-    // ── Owner ───────────────────────────────────────────────────────
     modifier onlyOwner() {
         if (msg.sender != owner) revert NotOwner();
         _;

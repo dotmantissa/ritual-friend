@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { getAllMembersStable, seedFromWidget } from "@/lib/discord.server";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -11,25 +10,13 @@ export const Route = createFileRoute("/api/members")({
   server: {
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers: corsHeaders }),
-      GET: async ({ request }) => {
-        try {
-          const url = new URL(request.url);
-          // Optional ?seed=1 to force-poll the widget before responding
-          if (url.searchParams.get("seed") === "1") {
-            await seedFromWidget();
-          }
-          const members = await getAllMembersStable();
-          return new Response(
-            JSON.stringify({ count: members.length, members }),
-            { headers: { "Content-Type": "application/json", ...corsHeaders } }
-          );
-        } catch (err: any) {
-          return new Response(
-            JSON.stringify({ error: err?.message ?? "server_error" }),
-            { status: 500, headers: { "Content-Type": "application/json", ...corsHeaders } }
-          );
-        }
-      },
+      GET: async () =>
+        new Response(
+          JSON.stringify({
+            message: "Use /api/members/available or /api/members/assignment/:wallet",
+          }),
+          { headers: { "Content-Type": "application/json", ...corsHeaders } }
+        ),
     },
   },
 });
