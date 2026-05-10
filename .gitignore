@@ -43,3 +43,4 @@ lerna-debug.log*
 
 # Project local helpers
 .codex
+.vercel
