@@ -1,7 +1,10 @@
-// Paste the deployed FriendZone contract address here after Phase 2 deploy.
-// Until then, Find Friend will run in MOCK mode (random index, no on-chain tx).
-export const FRIEND_ZONE_ADDRESS = "0x0000000000000000000000000000000000000000" as `0x${string}`;
-export const FRIEND_ZONE_DEPLOYED = false; // flip to true after pasting a real address
+const ENV_ADDRESS =
+  (import.meta.env.VITE_FRIEND_ZONE_ADDRESS as `0x${string}` | undefined) ??
+  "0x883619a7D8cd96f341149fDa3652b8C96172D946";
+const ENV_DEPLOYED = (import.meta.env.VITE_FRIEND_ZONE_DEPLOYED ?? "true").toLowerCase() === "true";
+
+export const FRIEND_ZONE_ADDRESS = ENV_ADDRESS as `0x${string}`;
+export const FRIEND_ZONE_DEPLOYED = ENV_DEPLOYED;
 
 export const FRIEND_ZONE_ABI = [
   {
