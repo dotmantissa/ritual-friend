@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import membersJson from "@/ritual_members.json";
 
 export interface PoolMember {
   username: string;
@@ -11,8 +12,9 @@ interface PairingsFile {
   claimed_by_username: string[];
 }
 
-const MEMBERS_PATH = path.resolve(process.cwd(), "src", "ritual_members.json");
-const PAIRINGS_PATH = path.resolve(process.cwd(), "pairings.json");
+const PAIRINGS_PATH = process.env.VERCEL
+  ? "/tmp/pairings.json"
+  : path.resolve(process.cwd(), "pairings.json");
 
 const members = loadMembers();
 const membersByUsername = new Map<string, PoolMember>(members.map((m) => [m.username, m]));
@@ -26,11 +28,7 @@ function normalizeWallet(wallet: string): string {
 }
 
 function loadMembers(): PoolMember[] {
-  if (!existsSync(MEMBERS_PATH)) {
-    throw new Error(`Missing ritual_members.json at ${MEMBERS_PATH}`);
-  }
-
-  const raw = JSON.parse(readFileSync(MEMBERS_PATH, "utf8"));
+  const raw = membersJson;
   if (!Array.isArray(raw)) {
     throw new Error("ritual_members.json must be an array");
   }
@@ -60,17 +58,26 @@ function persistPairings() {
   };
 
   const tmp = `${PAIRINGS_PATH}.tmp`;
-  writeFileSync(tmp, JSON.stringify(payload, null, 2));
-  renameSync(tmp, PAIRINGS_PATH);
+  try {
+    writeFileSync(tmp, JSON.stringify(payload, null, 2));
+    renameSync(tmp, PAIRINGS_PATH);
+  } catch (error) {
+    // On some serverless environments persistence may not be writable.
+    console.warn("[pool] could not persist pairings to disk", error);
+  }
 }
 
 function loadPairings() {
   if (!existsSync(PAIRINGS_PATH)) {
-    persistPairings();
     return;
   }
-
-  const raw = JSON.parse(readFileSync(PAIRINGS_PATH, "utf8")) as PairingsFile;
+  let raw: PairingsFile;
+  try {
+    raw = JSON.parse(readFileSync(PAIRINGS_PATH, "utf8")) as PairingsFile;
+  } catch (error) {
+    console.warn("[pool] could not read pairings file; starting with empty state", error);
+    return;
+  }
 
   if (raw?.paired && typeof raw.paired === "object") {
     for (const [wallet, username] of Object.entries(raw.paired)) {
