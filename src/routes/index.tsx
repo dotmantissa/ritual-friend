@@ -19,7 +19,7 @@ export function FriendZonePage() {
     usernameInput,
     setUsernameInput,
     status,
-    totalPairings,
+    stats,
     assignedFriend,
     justRevealed,
     isConnected,
@@ -100,9 +100,9 @@ export function FriendZonePage() {
         </div>
       )}
 
-      <main className="relative z-10 mx-auto flex min-h-screen max-w-6xl flex-col px-6 py-8">
+      <main className="app-main relative z-10">
         {page === "username" && (
-          <section className="mx-auto flex min-h-screen w-full max-w-2xl flex-col items-center justify-center text-center">
+          <section className="mx-auto flex w-full max-w-2xl flex-col items-center justify-center text-center">
             <div className="title-wrap">
               <h1 className="title-ritual">RITUAL</h1>
               <p className="title-friendzone">
@@ -117,7 +117,7 @@ export function FriendZonePage() {
             {status && <p className="mt-6 rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] px-4 py-3 text-sm">{status}</p>}
 
             <form
-              className="mt-8 w-full max-w-xl"
+              className="mt-8 w-full max-w-[420px]"
               onSubmit={(e) => {
                 e.preventDefault();
                 void submitUsername();
@@ -132,19 +132,31 @@ export function FriendZonePage() {
               <button type="submit" disabled={checkingUsername} className="find-friend-btn">
                 {checkingUsername ? "CHECKING..." : "FIND MY FRIEND →"}
               </button>
-              <p className="mt-5 text-xs text-[color:var(--muted-foreground)]">{totalPairings} friendships made on-chain</p>
+              <div className="stats-row">
+                <span>🤝 {stats.totalPairings} friendships forged on-chain</span>
+                <span>·</span>
+                <span>👥 {stats.availableCount} friends still in the pool</span>
+              </div>
             </form>
           </section>
         )}
 
         {page === "reveal" && (
-          <section className="flex min-h-screen w-full flex-col">
+          <section className="flex w-full flex-col">
             <div className="flex items-center justify-between">
               <div className="text-xs uppercase tracking-[0.25em] text-[#A78BFA]">RITUAL</div>
               <WalletConnect />
             </div>
 
-            <div className="flex flex-1 flex-col items-center justify-center gap-6">
+            <div className="page2-content">
+              <div className="title-wrap mb-8">
+                <h1 className="title-ritual">RITUAL</h1>
+                <p className="title-friendzone">
+                  <span className="bracket">[ </span>
+                  Friend Zone
+                  <span className="bracket"> ]</span>
+                </p>
+              </div>
               {assignedFriend && revealState === "revealed" ? (
                 <div className={justRevealed ? "relative animate-card-flip" : "relative"}>
                   {justRevealed && <div className="pointer-events-none absolute inset-0 w-full bg-gradient-to-r from-transparent via-[#F59E0B]/50 to-transparent animate-shimmer-sweep" />}

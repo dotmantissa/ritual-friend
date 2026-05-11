@@ -27,7 +27,7 @@ export function useFriendZone() {
   const [seekerUsername, setSeekerUsername] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [assignedFriend, setAssignedFriend] = useState<AssignedFriend | null>(null);
-  const [totalPairings, setTotalPairings] = useState(0);
+  const [stats, setStats] = useState({ totalPairings: 0, availableCount: 0 });
   const [justRevealed, setJustRevealed] = useState(false);
   const [checkingUsername, setCheckingUsername] = useState(false);
 
@@ -39,12 +39,24 @@ export function useFriendZone() {
   const refreshStats = async () => {
     const res = await fetch("/api/stats");
     const data = await res.json();
-    setTotalPairings(data.totalPairings ?? 0);
+    setStats({
+      totalPairings: data.totalPairings ?? 0,
+      availableCount: data.availableCount ?? 0,
+    });
     return data;
   };
 
   useEffect(() => {
-    refreshStats().catch(() => setTotalPairings(0));
+    const fetchStats = async () => {
+      try {
+        await refreshStats();
+      } catch {
+        setStats({ totalPairings: 0, availableCount: 0 });
+      }
+    };
+    fetchStats();
+    const interval = setInterval(fetchStats, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -182,7 +194,7 @@ export function useFriendZone() {
     setUsernameInput,
     seekerUsername,
     status,
-    totalPairings,
+    stats,
     assignedFriend,
     justRevealed,
     isConnected,

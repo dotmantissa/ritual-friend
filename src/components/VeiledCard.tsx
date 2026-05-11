@@ -22,8 +22,6 @@ export function VeiledCard({ state = "idle" }: VeiledCardProps) {
     <div
       className={`friend-veiled-card ${pending ? "is-pending" : ""} ${mining ? "is-mining" : ""}`}
       style={{
-        width: "320px",
-        height: "420px",
         border,
         boxShadow,
       }}

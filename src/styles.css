@@ -195,7 +195,7 @@
 .title-wrap { text-align: center; }
 .title-ritual {
   margin: 0;
-  font-size: clamp(52px, 8vw, 96px);
+  font-size: clamp(40px, 8vw, 96px);
   font-weight: 900;
   letter-spacing: 0.25em;
   line-height: 1;
@@ -235,6 +235,37 @@
   cursor: not-allowed;
 }
 
+.stats-row {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  align-items: center;
+  font-size: 13px;
+  color: rgba(167, 139, 250, 0.7);
+  margin-top: 20px;
+}
+
+.app-main {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.page2-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
 .summon-btn {
   display: block;
   width: 100%;
@@ -265,7 +296,7 @@
 .title-friendzone {
   margin-top: 4px;
   margin-bottom: 0;
-  font-size: clamp(16px, 2.5vw, 28px);
+  font-size: clamp(13px, 2.5vw, 28px);
   font-weight: 400;
   letter-spacing: 0.4em;
   text-transform: uppercase;
@@ -292,6 +323,9 @@
 }
 
 .friend-veiled-card {
+  width: min(320px, 90vw);
+  height: auto;
+  aspect-ratio: 320 / 420;
   border-radius: 20px;
   background: linear-gradient(160deg, #1E1B4B 0%, #0D0B2A 100%);
   position: relative;
@@ -352,14 +386,15 @@
 }
 
 .friend-revealed-card {
-  width: 320px;
-  height: 420px;
+  width: min(320px, 90vw);
+  height: auto;
+  aspect-ratio: 320 / 420;
   border-radius: 20px;
   background: linear-gradient(160deg, #1E1B4B 0%, #0D0B2A 100%);
   border: 1px solid rgba(245,158,11,0.5);
   box-shadow: 0 0 40px rgba(245,158,11,0.2), 0 0 80px rgba(245,158,11,0.08);
   text-align: center;
-  padding: 12px 18px 10px;
+  padding: 16px 18px 14px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -377,25 +412,25 @@
 }
 .revealed-divider.dashed {
   border-top: 1px dashed rgba(124,58,237,0.25);
-  margin: 14px auto 12px;
+  margin: 10px auto 10px;
 }
 .revealed-avatar-wrap {
-  width: 110px;
-  height: 110px;
+  width: 140px;
+  height: 140px;
   border-radius: 50%;
   border: 3px solid #F59E0B;
   box-shadow: 0 0 16px rgba(245,158,11,0.5);
   overflow: hidden;
-  margin: 0 auto 12px;
+  margin: 0 auto 10px;
 }
 .revealed-avatar {
-  width: 110px;
-  height: 110px;
+  width: 140px;
+  height: 140px;
   object-fit: cover;
 }
 .revealed-avatar-fallback {
-  width: 110px;
-  height: 110px;
+  width: 140px;
+  height: 140px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -411,20 +446,21 @@
   letter-spacing: 1px;
 }
 .revealed-username {
-  margin: 6px 0 0;
+  margin: 4px 0 0;
   font-size: 22px;
   font-weight: 700;
   color: #FFFFFF;
+  word-break: break-all;
 }
 .revealed-quote {
   margin: 0;
-  padding: 0 20px;
-  font-size: 11px;
-  color: #C4B5FD;
-  line-height: 1.6;
+  padding: 0 14px;
+  font-size: 14px;
+  color: #E2D9FF;
+  line-height: 1.7;
   font-style: italic;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }

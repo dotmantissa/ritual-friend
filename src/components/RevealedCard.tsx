@@ -11,8 +11,6 @@ function colorFor(username: string): string {
 }
 
 export function RevealedCard({ username, avatarUrl, quote }: RevealedCardProps) {
-  const shortQuote = quote.length > 120 ? `${quote.slice(0, 117)}...` : quote;
-
   return (
     <div className="friend-revealed-card">
       <p className="revealed-title">RITUAL [ Friend Zone ]</p>
@@ -41,7 +39,7 @@ export function RevealedCard({ username, avatarUrl, quote }: RevealedCardProps) 
 
       <div className="revealed-divider dashed" />
       <p className="revealed-quote" title={quote}>
-        "{shortQuote}"
+        "{quote}"
       </p>
 
       <div className="revealed-footer">🤝 ritual.foundation</div>
