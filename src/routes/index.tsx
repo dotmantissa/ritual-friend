@@ -142,9 +142,23 @@ export function FriendZonePage() {
         )}
 
         {page === "reveal" && (
-          <section className="flex w-full flex-col">
-            <div className="flex items-center justify-between">
-              <div className="text-xs uppercase tracking-[0.25em] text-[#A78BFA]">RITUAL</div>
+          <section className="flex w-full flex-col" style={{ paddingTop: "80px" }}>
+            <div
+              style={{
+                position: "fixed",
+                top: 0,
+                left: 0,
+                right: 0,
+                height: "64px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "0 24px",
+                zIndex: 100,
+                background: "transparent",
+              }}
+            >
+              <span style={{ fontSize: "12px", letterSpacing: "3px", color: "#A78BFA" }}>RITUAL</span>
               <WalletConnect />
             </div>
 
