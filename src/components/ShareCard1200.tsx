@@ -12,126 +12,94 @@ function colorFor(username: string): string {
 }
 
 export function ShareCard1200({ username, avatarUrl, quote, onAvatarLoad }: ShareCard1200Props) {
-  const safeQuote = quote.length > 260 ? `${quote.slice(0, 257)}...` : quote;
-  const fontSize = username.length > 12 ? 48 : 64;
+  const safeQuote = quote.length > 340 ? `${quote.slice(0, 337)}...` : quote;
 
   return (
     <div
       id="share-card-1200"
       style={{
-        width: "1200px",
-        height: "630px",
-        overflow: "hidden",
-        background: "radial-gradient(ellipse at 20% 20%, #2D1B69 0%, #0D0D1A 55%, #1A0A2E 100%)",
-        border: "1px solid rgba(124,58,237,0.35)",
+        width: "640px",
+        height: "840px",
+        borderRadius: "20px",
+        background: "linear-gradient(160deg, #1E1B4B 0%, #0D0B2A 100%)",
+        border: "1px solid rgba(245,158,11,0.5)",
+        boxShadow: "0 0 40px rgba(245,158,11,0.2), 0 0 80px rgba(245,158,11,0.08)",
+        textAlign: "center",
+        padding: "32px 36px 28px",
         boxSizing: "border-box",
-        fontFamily: "Inter, sans-serif",
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
       }}
     >
-      <div
-        style={{
-          position: "absolute",
-          inset: "0px",
-          backgroundImage:
-            "linear-gradient(rgba(124,58,237,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(124,58,237,0.04) 1px, transparent 1px)",
-          backgroundSize: "60px 60px",
-        }}
-      />
+      <p style={{ margin: 0, fontSize: "13px", letterSpacing: "6px", color: "#A78BFA" }}>RITUAL [ Friend Zone ]</p>
+      <div style={{ width: "80%", margin: "8px auto 32px", borderTop: "1px solid rgba(124,58,237,0.3)" }} />
 
       <div
         style={{
-          position: "absolute",
-          left: "-100px",
-          top: "-100px",
-          width: "500px",
-          height: "500px",
-          background: "radial-gradient(circle, rgba(76,29,149,0.5) 0%, transparent 70%)",
-          pointerEvents: "none",
+          width: "220px",
+          height: "220px",
+          borderRadius: "50%",
+          border: "3px solid #F59E0B",
+          boxShadow: "0 0 16px rgba(245,158,11,0.5)",
+          overflow: "hidden",
+          margin: "0 auto 20px",
         }}
-      />
-
-      <div
-        style={{
-          position: "absolute",
-          right: "-80px",
-          bottom: "-80px",
-          width: "420px",
-          height: "420px",
-          background: "radial-gradient(circle, rgba(120,53,15,0.4) 0%, transparent 70%)",
-          pointerEvents: "none",
-        }}
-      />
-
-      <div style={{ position: "absolute", left: "60px", top: "48px", right: "60px", bottom: "40px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div style={{ fontSize: "15px", letterSpacing: "4px", color: "#A78BFA", fontFamily: "monospace" }}>
-            RITUAL <span style={{ color: "#F59E0B" }}>[</span> Friend Zone <span style={{ color: "#F59E0B" }}>]</span>
-          </div>
-          <div style={{ fontSize: "11px", color: "#6B7280", letterSpacing: "2px" }}>ritual.foundation</div>
-        </div>
-
-        <div style={{ borderTop: "1px solid rgba(124,58,237,0.25)", marginTop: "20px", marginBottom: "30px" }} />
-
-        <div style={{ display: "flex", alignItems: "center", gap: "60px" }}>
+      >
+        {avatarUrl ? (
+          <img
+            src={avatarUrl}
+            alt={username}
+            referrerPolicy="no-referrer"
+            onLoad={onAvatarLoad}
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).style.display = "none";
+            }}
+            style={{ width: "220px", height: "220px", objectFit: "cover" }}
+          />
+        ) : (
           <div
             style={{
-              width: "200px",
-              height: "200px",
-              borderRadius: "50%",
-              border: "4px solid #F59E0B",
-              boxShadow: "0 0 30px rgba(245,158,11,0.5), 0 0 60px rgba(245,158,11,0.2)",
-              overflow: "hidden",
-              display: "grid",
-              placeItems: "center",
-              background: avatarUrl ? "transparent" : colorFor(username),
+              width: "220px",
+              height: "220px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "70px",
+              fontWeight: 800,
+              color: "#fff",
+              textTransform: "uppercase",
+              backgroundColor: colorFor(username),
             }}
           >
-            {avatarUrl ? (
-              <img src={avatarUrl} alt={username} style={{ width: "200px", height: "200px", objectFit: "cover" }} onLoad={onAvatarLoad} />
-            ) : (
-              <span style={{ color: "#FFFFFF", fontSize: "80px", fontWeight: 800, textTransform: "uppercase" }}>{username[0]}</span>
-            )}
+            {username[0]}
           </div>
-
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: "16px", color: "#9CA3AF", fontWeight: 400, marginBottom: "12px" }}>your ritual friend is</div>
-            <div style={{ fontSize: `${fontSize}px`, color: "#FFFFFF", fontWeight: 800, lineHeight: "1" }}>@{username}</div>
-            <div style={{ borderTop: "1px solid rgba(124,58,237,0.2)", marginTop: "24px", width: "100%" }} />
-            <div
-              style={{
-                marginTop: "24px",
-                fontSize: "18px",
-                color: "#C4B5FD",
-                fontStyle: "italic",
-                lineHeight: "1.6",
-                maxWidth: "480px",
-                display: "-webkit-box",
-                WebkitLineClamp: 3,
-                WebkitBoxOrient: "vertical",
-                overflow: "hidden",
-              }}
-            >
-              "{safeQuote}"
-            </div>
-          </div>
-        </div>
-
-        <div
-          style={{
-            position: "absolute",
-            bottom: "0px",
-            left: "0px",
-            right: "0px",
-            borderTop: "1px solid rgba(124,58,237,0.2)",
-            paddingTop: "16px",
-            display: "flex",
-            justifyContent: "space-between",
-          }}
-        >
-          <div style={{ fontSize: "13px", color: "#4B5563" }}>Ritual Chain · Chain ID 1979 · Sign a tx. Make a friend.</div>
-          <div style={{ fontSize: "13px", color: "#6B7280" }}>@ritualnet</div>
-        </div>
+        )}
       </div>
+
+      <p style={{ margin: 0, fontSize: "16px", color: "#9CA3AF", letterSpacing: "2px" }}>your ritual friend is</p>
+      <h3 style={{ margin: "8px 0 0", fontSize: "36px", fontWeight: 700, color: "#FFFFFF", wordBreak: "break-all" }}>@{username}</h3>
+
+      <div style={{ width: "80%", margin: "20px auto 20px", borderTop: "1px dashed rgba(124,58,237,0.25)" }} />
+      <p
+        title={quote}
+        style={{
+          margin: 0,
+          padding: "0 28px",
+          fontSize: "18px",
+          color: "#E2D9FF",
+          lineHeight: "1.7",
+          fontStyle: "italic",
+          display: "-webkit-box",
+          WebkitLineClamp: 4,
+          WebkitBoxOrient: "vertical",
+          overflow: "hidden",
+        }}
+      >
+        "{safeQuote}"
+      </p>
+
+      <div style={{ marginTop: "auto", fontSize: "13px", color: "#6B7280", letterSpacing: "1px" }}>🤝 ritual.foundation</div>
     </div>
   );
 }

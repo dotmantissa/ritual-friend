@@ -53,8 +53,8 @@ export function FriendZonePage() {
     await new Promise((r) => setTimeout(r, 200));
     const mod = await import("html-to-image");
     const dataUrl = await mod.toPng(target, {
-      width: 1200,
-      height: 630,
+      width: 640,
+      height: 840,
       pixelRatio: 2,
       skipFonts: false,
       cacheBust: true,
@@ -83,8 +83,8 @@ export function FriendZonePage() {
             position: "fixed",
             top: 0,
             left: 0,
-            width: "1200px",
-            height: "630px",
+            width: "640px",
+            height: "840px",
             opacity: 0,
             pointerEvents: "none",
             zIndex: -1,
