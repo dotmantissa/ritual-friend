@@ -32,7 +32,7 @@ export function useFriendZone() {
   const [stats, setStats] = useState({ totalPairings: 0, availableCount: 0 });
   const [justRevealed, setJustRevealed] = useState(false);
   const [checkingUsername, setCheckingUsername] = useState(false);
-  const [backendConnecting, setBackendConnecting] = useState(false);
+  const [, setBackendReady] = useState(false);
 
   const isConfigured = useMemo(
     () =>
@@ -44,10 +44,12 @@ export function useFriendZone() {
     []
   );
 
-  const apiUrl = (path: string) => `${BACKEND_URL}${path}`;
+  const backendBaseUrl = (import.meta.env.VITE_BACKEND_URL as string | undefined) ?? BACKEND_URL;
+  const apiUrl = (path: string) => `${backendBaseUrl}${path}`;
 
-  const refreshStats = async () => {
-    const res = await fetch(apiUrl("/api/stats"));
+  const refreshStats = async (opts?: { signal?: AbortSignal }) => {
+    const res = await fetch(apiUrl("/api/stats"), { signal: opts?.signal });
+    if (!res.ok) throw new Error("not ok");
     const data = await res.json();
     const availableCount = Number(data.availableCount ?? 0);
     setStats({
@@ -61,18 +63,21 @@ export function useFriendZone() {
     let mounted = true;
     const fetchStats = async () => {
       try {
-        if (mounted) setBackendConnecting(true);
-        await refreshStats();
-        if (mounted) setBackendConnecting(false);
+        await refreshStats({ signal: AbortSignal.timeout(5000) });
       } catch {
         if (mounted) {
-          setBackendConnecting(true);
           setStats({ totalPairings: 0, availableCount: 0 });
         }
+      } finally {
+        if (mounted) setBackendReady(true);
       }
     };
     fetchStats();
-    const interval = setInterval(fetchStats, 30000);
+    const interval = setInterval(async () => {
+      try {
+        await refreshStats({ signal: AbortSignal.timeout(5000) });
+      } catch {}
+    }, 30000);
     return () => {
       mounted = false;
       clearInterval(interval);
@@ -223,7 +228,6 @@ export function useFriendZone() {
     isConnected,
     submitUsername,
     checkingUsername,
-    backendConnecting,
     summonFriend,
   };
 }

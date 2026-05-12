@@ -13,7 +13,12 @@ export const Route = createFileRoute("/api/stats")({
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers: corsHeaders }),
       GET: async () => {
-        const stats = await readFriendZoneStats(getMemberPool().length);
+        let stats = { totalPairings: 0, availableCount: 0 };
+        try {
+          stats = await readFriendZoneStats(getMemberPool().length);
+        } catch {
+          stats = { totalPairings: 0, availableCount: 0 };
+        }
         return new Response(JSON.stringify(stats), {
           headers: { "Content-Type": "application/json", ...corsHeaders },
         });
