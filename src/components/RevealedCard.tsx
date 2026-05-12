@@ -13,34 +13,37 @@ function colorFor(username: string): string {
 export function RevealedCard({ username, avatarUrl, quote }: RevealedCardProps) {
   return (
     <div className="friend-revealed-card">
-      <p className="revealed-title">RITUAL [ Friend Zone ]</p>
-      <div className="revealed-divider" />
+      <div className="revealed-top">
+        <p className="revealed-title">RITUAL [ Friend Zone ]</p>
+        <div className="revealed-divider" />
 
-      <div className="revealed-avatar-wrap">
-        {avatarUrl ? (
-          <img
-            src={avatarUrl}
-            alt={username}
-            className="revealed-avatar"
-            referrerPolicy="no-referrer"
-            onError={(e) => {
-              (e.currentTarget as HTMLImageElement).style.display = "none";
-            }}
-          />
-        ) : (
-          <div className="revealed-avatar-fallback" style={{ backgroundColor: colorFor(username) }}>
-            {username[0]}
-          </div>
-        )}
+        <div className="revealed-avatar-wrap">
+          {avatarUrl ? (
+            <img
+              src={avatarUrl}
+              alt={username}
+              className="revealed-avatar"
+              referrerPolicy="no-referrer"
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).style.display = "none";
+              }}
+            />
+          ) : (
+            <div className="revealed-avatar-fallback" style={{ backgroundColor: colorFor(username) }}>
+              {username[0]}
+            </div>
+          )}
+        </div>
       </div>
 
-      <p className="revealed-sub">your ritual friend is</p>
-      <h3 className="revealed-username">@{username}</h3>
-
-      <div className="revealed-divider dashed" />
-      <p className="revealed-quote" title={quote}>
-        "{quote}"
-      </p>
+      <div className="revealed-middle">
+        <p className="revealed-sub">your ritual friend is</p>
+        <h3 className="revealed-username">@{username}</h3>
+        <div className="revealed-divider dashed" />
+        <p className="revealed-quote" title={quote}>
+          "{quote}"
+        </p>
+      </div>
 
       <div className="revealed-footer">🤝 ritual.foundation</div>
     </div>

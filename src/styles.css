@@ -387,17 +387,25 @@
 
 .friend-revealed-card {
   width: min(320px, 90vw);
-  height: auto;
+  height: 100%;
   aspect-ratio: 320 / 420;
   border-radius: 20px;
   background: linear-gradient(160deg, #1E1B4B 0%, #0D0B2A 100%);
   border: 1px solid rgba(245,158,11,0.5);
   box-shadow: 0 0 40px rgba(245,158,11,0.2), 0 0 80px rgba(245,158,11,0.08);
   text-align: center;
-  padding: 16px 18px 14px;
+  padding: 24px 20px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+.revealed-top {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 .revealed-title {
   margin: 0;
@@ -407,30 +415,28 @@
 }
 .revealed-divider {
   width: 80%;
-  margin: 4px auto 16px;
+  margin: 0;
   border-top: 1px solid rgba(124,58,237,0.3);
 }
 .revealed-divider.dashed {
   border-top: 1px dashed rgba(124,58,237,0.25);
-  margin: 10px auto 10px;
 }
 .revealed-avatar-wrap {
-  width: 140px;
-  height: 140px;
+  width: 180px;
+  height: 180px;
   border-radius: 50%;
   border: 3px solid #F59E0B;
   box-shadow: 0 0 16px rgba(245,158,11,0.5);
   overflow: hidden;
-  margin: 0 auto 10px;
 }
 .revealed-avatar {
-  width: 140px;
-  height: 140px;
+  width: 180px;
+  height: 180px;
   object-fit: cover;
 }
 .revealed-avatar-fallback {
-  width: 140px;
-  height: 140px;
+  width: 180px;
+  height: 180px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -439,6 +445,13 @@
   color: #fff;
   text-transform: uppercase;
 }
+.revealed-middle {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
 .revealed-sub {
   margin: 0;
   font-size: 10px;
@@ -446,16 +459,17 @@
   letter-spacing: 1px;
 }
 .revealed-username {
-  margin: 4px 0 0;
-  font-size: 22px;
+  margin: 0;
+  font-size: 28px;
   font-weight: 700;
   color: #FFFFFF;
   word-break: break-all;
 }
 .revealed-quote {
   margin: 0;
-  padding: 0 14px;
-  font-size: 14px;
+  padding: 0 16px;
+  font-size: 16px;
+  text-align: center;
   color: #E2D9FF;
   line-height: 1.7;
   font-style: italic;
@@ -465,7 +479,7 @@
   overflow: hidden;
 }
 .revealed-footer {
-  margin-top: auto;
+  margin: 0;
   font-size: 9px;
   color: #6B7280;
   letter-spacing: 1px;
