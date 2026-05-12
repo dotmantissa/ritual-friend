@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { getMemberPool } from "@/lib/pool";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -13,7 +14,7 @@ export const Route = createFileRoute("/api/members")({
       GET: async () =>
         new Response(
           JSON.stringify({
-            message: "Use /api/members/available or /api/members/assignment/:wallet",
+            members: getMemberPool(),
           }),
           { headers: { "Content-Type": "application/json", ...corsHeaders } }
         ),

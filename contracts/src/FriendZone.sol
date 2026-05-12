@@ -2,72 +2,95 @@
 pragma solidity ^0.8.24;
 
 contract FriendZone {
-    mapping(address => bool) public hasRevealed;
-    mapping(address => uint256) public lastFriendIndex;
-    mapping(address => uint256) public revealCount;
-    uint256 public totalReveals;
-    uint256 public revealFee = 0;
-    address public owner;
-
     event FriendRevealed(
-        address indexed seeker,
+        address indexed wallet,
         uint256 indexed friendIndex,
         uint256 memberCount,
-        uint256 nonce
+        string seekerUsername,
+        string assignedUsername
     );
 
+    error AlreadyPaired();
+    error UsernameAlreadyClaimed();
     error MemberCountZero();
+    error IndexAlreadyClaimed();
     error InsufficientFee();
     error NotOwner();
-    error WithdrawFailed();
 
-    modifier onlyOwner() {
-        if (msg.sender != owner) revert NotOwner();
-        _;
-    }
+    address public owner;
+    uint256 public revealFee = 0;
+    uint256 public totalPairings;
+    uint256 public claimedCount;
+
+    mapping(address => uint256) public walletFriendIndex;
+    mapping(address => bool) public walletHasPaired;
+    mapping(bytes32 => bool) public usernameHashClaimed;
+    mapping(bytes32 => address) public usernameToWallet;
+    mapping(address => bytes32) public walletToUsernameHash;
+    mapping(uint256 => bool) public indexClaimed;
 
     constructor() {
         owner = msg.sender;
     }
 
-    function revealFriend(uint256 memberCount) external payable returns (uint256 friendIndex) {
+    function revealFriend(
+        uint256 memberCount,
+        string calldata seekerUsername,
+        string calldata assignedUsername,
+        uint256 resolvedIndex
+    ) external payable returns (uint256 chainIndex) {
         if (memberCount == 0) revert MemberCountZero();
         if (msg.value < revealFee) revert InsufficientFee();
+        if (walletHasPaired[msg.sender]) revert AlreadyPaired();
 
-        if (hasRevealed[msg.sender]) {
-            friendIndex = lastFriendIndex[msg.sender];
-            emit FriendRevealed(msg.sender, friendIndex, memberCount, revealCount[msg.sender] - 1);
-            return friendIndex;
-        }
+        bytes32 seekerHash = keccak256(abi.encodePacked(_lower(seekerUsername)));
+        bytes32 assignedHash = keccak256(abi.encodePacked(_lower(assignedUsername)));
 
-        bytes32 entropy = keccak256(
-            abi.encodePacked(
-                block.prevrandao,
-                block.timestamp,
-                msg.sender,
-                revealCount[msg.sender],
-                memberCount
-            )
-        );
+        if (usernameHashClaimed[seekerHash]) revert UsernameAlreadyClaimed();
+        if (usernameHashClaimed[assignedHash]) revert UsernameAlreadyClaimed();
+        if (indexClaimed[resolvedIndex]) revert IndexAlreadyClaimed();
 
-        friendIndex = uint256(entropy) % memberCount;
+        bytes32 entropy = keccak256(abi.encodePacked(block.prevrandao, block.timestamp, msg.sender, memberCount));
+        chainIndex = uint256(entropy) % memberCount;
 
-        revealCount[msg.sender]++;
-        lastFriendIndex[msg.sender] = friendIndex;
-        hasRevealed[msg.sender] = true;
-        totalReveals++;
+        walletFriendIndex[msg.sender] = chainIndex;
+        walletHasPaired[msg.sender] = true;
+        usernameHashClaimed[seekerHash] = true;
+        usernameHashClaimed[assignedHash] = true;
+        usernameToWallet[seekerHash] = msg.sender;
+        walletToUsernameHash[msg.sender] = seekerHash;
+        indexClaimed[chainIndex] = true;
+        totalPairings++;
+        claimedCount += 2;
 
-        emit FriendRevealed(msg.sender, friendIndex, memberCount, revealCount[msg.sender] - 1);
-        return friendIndex;
+        emit FriendRevealed(msg.sender, chainIndex, memberCount, seekerUsername, assignedUsername);
     }
 
-    function setRevealFee(uint256 fee) external onlyOwner {
+    function isUsernameClaimed(string calldata username) external view returns (bool) {
+        return usernameHashClaimed[keccak256(abi.encodePacked(_lower(username)))];
+    }
+
+    function getWalletPairing(address wallet) external view returns (bool paired, uint256 friendIndex) {
+        return (walletHasPaired[wallet], walletFriendIndex[wallet]);
+    }
+
+    function _lower(string calldata s) internal pure returns (string memory) {
+        bytes memory b = bytes(s);
+        bytes memory result = new bytes(b.length);
+        for (uint256 i = 0; i < b.length; i++) {
+            result[i] = (b[i] >= 0x41 && b[i] <= 0x5A) ? bytes1(uint8(b[i]) + 32) : b[i];
+        }
+        return string(result);
+    }
+
+    function setRevealFee(uint256 fee) external {
+        if (msg.sender != owner) revert NotOwner();
         revealFee = fee;
     }
 
-    function withdraw() external onlyOwner {
-        (bool ok, ) = owner.call{ value: address(this).balance }("");
-        if (!ok) revert WithdrawFailed();
+    function withdraw() external {
+        if (msg.sender != owner) revert NotOwner();
+        payable(owner).transfer(address(this).balance);
     }
 
     receive() external payable {}

@@ -12,12 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiStatsRouteImport } from './routes/api/stats'
 import { Route as ApiMembersRouteImport } from './routes/api/members'
-import { Route as ApiClaimRouteImport } from './routes/api/claim'
 import { Route as ApiProxyAvatarRouteImport } from './routes/api/proxy.avatar'
-import { Route as ApiPairingsExportRouteImport } from './routes/api/pairings.export'
-import { Route as ApiMembersAvailableRouteImport } from './routes/api/members.available'
 import { Route as ApiMembersCheckUsernameRouteImport } from './routes/api/members.check.$username'
-import { Route as ApiMembersAssignmentWalletRouteImport } from './routes/api/members.assignment.$wallet'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -34,114 +30,67 @@ const ApiMembersRoute = ApiMembersRouteImport.update({
   path: '/api/members',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiClaimRoute = ApiClaimRouteImport.update({
-  id: '/api/claim',
-  path: '/api/claim',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiProxyAvatarRoute = ApiProxyAvatarRouteImport.update({
   id: '/api/proxy/avatar',
   path: '/api/proxy/avatar',
   getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPairingsExportRoute = ApiPairingsExportRouteImport.update({
-  id: '/api/pairings/export',
-  path: '/api/pairings/export',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiMembersAvailableRoute = ApiMembersAvailableRouteImport.update({
-  id: '/available',
-  path: '/available',
-  getParentRoute: () => ApiMembersRoute,
 } as any)
 const ApiMembersCheckUsernameRoute = ApiMembersCheckUsernameRouteImport.update({
   id: '/check/$username',
   path: '/check/$username',
   getParentRoute: () => ApiMembersRoute,
 } as any)
-const ApiMembersAssignmentWalletRoute =
-  ApiMembersAssignmentWalletRouteImport.update({
-    id: '/assignment/$wallet',
-    path: '/assignment/$wallet',
-    getParentRoute: () => ApiMembersRoute,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/api/claim': typeof ApiClaimRoute
   '/api/members': typeof ApiMembersRouteWithChildren
   '/api/stats': typeof ApiStatsRoute
-  '/api/members/available': typeof ApiMembersAvailableRoute
-  '/api/pairings/export': typeof ApiPairingsExportRoute
   '/api/proxy/avatar': typeof ApiProxyAvatarRoute
-  '/api/members/assignment/$wallet': typeof ApiMembersAssignmentWalletRoute
   '/api/members/check/$username': typeof ApiMembersCheckUsernameRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/api/claim': typeof ApiClaimRoute
   '/api/members': typeof ApiMembersRouteWithChildren
   '/api/stats': typeof ApiStatsRoute
-  '/api/members/available': typeof ApiMembersAvailableRoute
-  '/api/pairings/export': typeof ApiPairingsExportRoute
   '/api/proxy/avatar': typeof ApiProxyAvatarRoute
-  '/api/members/assignment/$wallet': typeof ApiMembersAssignmentWalletRoute
   '/api/members/check/$username': typeof ApiMembersCheckUsernameRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/api/claim': typeof ApiClaimRoute
   '/api/members': typeof ApiMembersRouteWithChildren
   '/api/stats': typeof ApiStatsRoute
-  '/api/members/available': typeof ApiMembersAvailableRoute
-  '/api/pairings/export': typeof ApiPairingsExportRoute
   '/api/proxy/avatar': typeof ApiProxyAvatarRoute
-  '/api/members/assignment/$wallet': typeof ApiMembersAssignmentWalletRoute
   '/api/members/check/$username': typeof ApiMembersCheckUsernameRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/api/claim'
     | '/api/members'
     | '/api/stats'
-    | '/api/members/available'
-    | '/api/pairings/export'
     | '/api/proxy/avatar'
-    | '/api/members/assignment/$wallet'
     | '/api/members/check/$username'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/api/claim'
     | '/api/members'
     | '/api/stats'
-    | '/api/members/available'
-    | '/api/pairings/export'
     | '/api/proxy/avatar'
-    | '/api/members/assignment/$wallet'
     | '/api/members/check/$username'
   id:
     | '__root__'
     | '/'
-    | '/api/claim'
     | '/api/members'
     | '/api/stats'
-    | '/api/members/available'
-    | '/api/pairings/export'
     | '/api/proxy/avatar'
-    | '/api/members/assignment/$wallet'
     | '/api/members/check/$username'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ApiClaimRoute: typeof ApiClaimRoute
   ApiMembersRoute: typeof ApiMembersRouteWithChildren
   ApiStatsRoute: typeof ApiStatsRoute
-  ApiPairingsExportRoute: typeof ApiPairingsExportRoute
   ApiProxyAvatarRoute: typeof ApiProxyAvatarRoute
 }
 
@@ -168,33 +117,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiMembersRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/claim': {
-      id: '/api/claim'
-      path: '/api/claim'
-      fullPath: '/api/claim'
-      preLoaderRoute: typeof ApiClaimRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/proxy/avatar': {
       id: '/api/proxy/avatar'
       path: '/api/proxy/avatar'
       fullPath: '/api/proxy/avatar'
       preLoaderRoute: typeof ApiProxyAvatarRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/api/pairings/export': {
-      id: '/api/pairings/export'
-      path: '/api/pairings/export'
-      fullPath: '/api/pairings/export'
-      preLoaderRoute: typeof ApiPairingsExportRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/members/available': {
-      id: '/api/members/available'
-      path: '/available'
-      fullPath: '/api/members/available'
-      preLoaderRoute: typeof ApiMembersAvailableRouteImport
-      parentRoute: typeof ApiMembersRoute
     }
     '/api/members/check/$username': {
       id: '/api/members/check/$username'
@@ -203,25 +131,14 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiMembersCheckUsernameRouteImport
       parentRoute: typeof ApiMembersRoute
     }
-    '/api/members/assignment/$wallet': {
-      id: '/api/members/assignment/$wallet'
-      path: '/assignment/$wallet'
-      fullPath: '/api/members/assignment/$wallet'
-      preLoaderRoute: typeof ApiMembersAssignmentWalletRouteImport
-      parentRoute: typeof ApiMembersRoute
-    }
   }
 }
 
 interface ApiMembersRouteChildren {
-  ApiMembersAvailableRoute: typeof ApiMembersAvailableRoute
-  ApiMembersAssignmentWalletRoute: typeof ApiMembersAssignmentWalletRoute
   ApiMembersCheckUsernameRoute: typeof ApiMembersCheckUsernameRoute
 }
 
 const ApiMembersRouteChildren: ApiMembersRouteChildren = {
-  ApiMembersAvailableRoute: ApiMembersAvailableRoute,
-  ApiMembersAssignmentWalletRoute: ApiMembersAssignmentWalletRoute,
   ApiMembersCheckUsernameRoute: ApiMembersCheckUsernameRoute,
 }
 
@@ -231,10 +148,8 @@ const ApiMembersRouteWithChildren = ApiMembersRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ApiClaimRoute: ApiClaimRoute,
   ApiMembersRoute: ApiMembersRouteWithChildren,
   ApiStatsRoute: ApiStatsRoute,
-  ApiPairingsExportRoute: ApiPairingsExportRoute,
   ApiProxyAvatarRoute: ApiProxyAvatarRoute,
 }
 export const routeTree = rootRouteImport

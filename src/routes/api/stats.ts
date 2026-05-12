@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { totalPairings } from "@/lib/pairings";
-import { getAvailableCount } from "@/lib/pool";
+import { readFriendZoneStats } from "@/lib/friendzone-chain";
+import { getMemberPool } from "@/lib/pool";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,14 +12,12 @@ export const Route = createFileRoute("/api/stats")({
   server: {
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers: corsHeaders }),
-      GET: async () =>
-        new Response(
-          JSON.stringify({
-            totalPairings: totalPairings(),
-            availableCount: getAvailableCount(),
-          }),
-          { headers: { "Content-Type": "application/json", ...corsHeaders } }
-        ),
+      GET: async () => {
+        const stats = await readFriendZoneStats(getMemberPool().length);
+        return new Response(JSON.stringify(stats), {
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        });
+      },
     },
   },
 });

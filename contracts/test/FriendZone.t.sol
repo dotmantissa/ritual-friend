@@ -7,52 +7,62 @@ import "../src/FriendZone.sol";
 contract FriendZoneTest is Test {
     FriendZone internal friendZone;
     address internal alice = address(0xA11CE);
+    address internal bob = address(0xB0B);
 
     function setUp() public {
         friendZone = new FriendZone();
         vm.deal(alice, 10 ether);
+        vm.deal(bob, 10 ether);
     }
 
-    function testRevealStoresStateAndEmits() public {
+    function testRevealStoresState() public {
         vm.prank(alice);
-        uint256 idx = friendZone.revealFriend(100);
+        uint256 idx = friendZone.revealFriend(100, "alice", "bob", 10);
 
         assertLt(idx, 100);
-        assertTrue(friendZone.hasRevealed(alice));
-        assertEq(friendZone.lastFriendIndex(alice), idx);
-        assertEq(friendZone.revealCount(alice), 1);
-        assertEq(friendZone.totalReveals(), 1);
+        assertTrue(friendZone.walletHasPaired(alice));
+        assertEq(friendZone.walletFriendIndex(alice), idx);
+        assertEq(friendZone.totalPairings(), 1);
+        assertEq(friendZone.claimedCount(), 2);
+        assertTrue(friendZone.isUsernameClaimed("alice"));
+        assertTrue(friendZone.isUsernameClaimed("bob"));
     }
 
-    function testSecondRevealReturnsSameIndexAndDoesNotIncrement() public {
+    function testSecondRevealRevertsAlreadyPaired() public {
         vm.startPrank(alice);
-        uint256 first = friendZone.revealFriend(50);
-        uint256 second = friendZone.revealFriend(50);
+        friendZone.revealFriend(50, "alice", "bob", 7);
+        vm.expectRevert(FriendZone.AlreadyPaired.selector);
+        friendZone.revealFriend(50, "alice", "bob", 7);
         vm.stopPrank();
-
-        assertEq(first, second);
-        assertEq(friendZone.revealCount(alice), 1);
-        assertEq(friendZone.totalReveals(), 1);
     }
 
     function testMemberCountZeroReverts() public {
         vm.prank(alice);
         vm.expectRevert(FriendZone.MemberCountZero.selector);
-        friendZone.revealFriend(0);
+        friendZone.revealFriend(0, "alice", "bob", 0);
     }
 
     function testInsufficientFeeReverts() public {
         friendZone.setRevealFee(0.1 ether);
         vm.prank(alice);
         vm.expectRevert(FriendZone.InsufficientFee.selector);
-        friendZone.revealFriend(10);
+        friendZone.revealFriend(10, "alice", "bob", 0);
+    }
+
+    function testClaimedUsernameReverts() public {
+        vm.prank(alice);
+        friendZone.revealFriend(10, "alice", "bob", 0);
+
+        vm.prank(bob);
+        vm.expectRevert(FriendZone.UsernameAlreadyClaimed.selector);
+        friendZone.revealFriend(10, "alice", "charlie", 1);
     }
 
     function testOwnerCanWithdraw() public {
+        friendZone.setRevealFee(1 ether);
         vm.prank(alice);
-        friendZone.revealFriend{ value: 1 ether }(10);
+        friendZone.revealFriend{ value: 1 ether }(10, "alice", "bob", 1);
 
-        friendZone.setRevealFee(0);
         uint256 beforeBal = address(this).balance;
         friendZone.withdraw();
         assertEq(address(friendZone).balance, 0);

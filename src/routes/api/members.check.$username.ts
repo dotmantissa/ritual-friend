@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { QUOTES } from "@/lib/quotes";
+import { FRIEND_ZONE_ABI, FRIEND_ZONE_ADDRESS } from "@/lib/constants";
+import { friendRevealedEvent, friendZonePublicClient } from "@/lib/friendzone-chain";
 import { getMemberByUsername } from "@/lib/pool";
-import { getPairingByAssignedUsername, getPairingBySeekerUsername } from "@/lib/pairings";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -25,44 +27,63 @@ export const Route = createFileRoute("/api/members/check/$username")({
           });
         }
 
-        const assigned = getPairingByAssignedUsername(username);
-        if (assigned) {
-          return new Response(
-            JSON.stringify({
-              status: "assigned_to_seeker",
-              seekerUsername: assigned.pairing.seekerUsername,
-              friend: {
-                username: assigned.pairing.assignedUsername,
-                avatar_url:
-                  assigned.pairing.assignedAvatarUrl ||
-                  getMemberByUsername(assigned.pairing.assignedUsername)?.avatar_url ||
-                  "",
-                quote: assigned.pairing.quote,
-              },
-            }),
-            { headers: { "Content-Type": "application/json", ...corsHeaders } }
-          );
+        const claimed = await friendZonePublicClient.readContract({
+          address: FRIEND_ZONE_ADDRESS,
+          abi: FRIEND_ZONE_ABI,
+          functionName: "isUsernameClaimed",
+          args: [username],
+        });
+        if (!claimed) {
+          return new Response(JSON.stringify({ status: "fresh" }), {
+            headers: { "Content-Type": "application/json", ...corsHeaders },
+          });
         }
 
-        const seeker = getPairingBySeekerUsername(username);
-        if (seeker) {
+        const events = await friendZonePublicClient.getLogs({
+          address: FRIEND_ZONE_ADDRESS,
+          event: friendRevealedEvent,
+          fromBlock: 0n,
+        });
+        const lower = username.toLowerCase();
+
+        const asSeeker = events.find((event) => event.args.seekerUsername?.toLowerCase() === lower);
+        if (asSeeker) {
+          const assignedUsername = asSeeker.args.assignedUsername ?? "";
+          const member = getMemberByUsername(assignedUsername);
+          const friendIndex = Number(asSeeker.args.friendIndex ?? 0n);
           return new Response(
             JSON.stringify({
               status: "already_paired",
               friend: {
-                username: seeker.assignedUsername,
-                avatar_url:
-                  seeker.assignedAvatarUrl || getMemberByUsername(seeker.assignedUsername)?.avatar_url || "",
-                quote: seeker.quote,
+                username: assignedUsername,
+                avatar_url: member?.avatar_url ?? "",
+                quote: QUOTES[friendIndex % QUOTES.length],
               },
             }),
             { headers: { "Content-Type": "application/json", ...corsHeaders } }
           );
         }
 
-        return new Response(JSON.stringify({ status: "fresh" }), {
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        });
+        const asAssigned = events.find((event) => event.args.assignedUsername?.toLowerCase() === lower);
+        if (asAssigned) {
+          const assignedUsername = asAssigned.args.assignedUsername ?? "";
+          const member = getMemberByUsername(assignedUsername);
+          const friendIndex = Number(asAssigned.args.friendIndex ?? 0n);
+          return new Response(
+            JSON.stringify({
+              status: "assigned_to_seeker",
+              seekerUsername: asAssigned.args.seekerUsername ?? "",
+              friend: {
+                username: assignedUsername,
+                avatar_url: member?.avatar_url ?? "",
+                quote: QUOTES[friendIndex % QUOTES.length],
+              },
+            }),
+            { headers: { "Content-Type": "application/json", ...corsHeaders } }
+          );
+        }
+
+        return new Response(JSON.stringify({ status: "fresh" }), { headers: { "Content-Type": "application/json", ...corsHeaders } });
       },
     },
   },

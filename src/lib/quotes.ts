@@ -182,3 +182,5 @@ export const FRIENDSHIP_QUOTES = [
   "A true friend is someone who lets you have total freedom to be yourself — and loves you just the same.",
   "Wherever you are, it is your friends who make your world. And now, one more.",
 ];
+
+export const QUOTES = FRIENDSHIP_QUOTES;

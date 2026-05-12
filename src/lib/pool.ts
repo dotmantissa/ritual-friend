@@ -1,5 +1,4 @@
 import membersJson from "@/ritual_members.json";
-import { claimedUsernamesSet } from "@/lib/pairings";
 
 export interface PoolMember {
   username: string;
@@ -40,20 +39,21 @@ export function getMemberByUsername(username: string): PoolMember | null {
 }
 
 export function getAvailablePool(): PoolMember[] {
-  const claimed = claimedUsernamesSet();
-  return members.filter((member) => !claimed.has(member.username));
+  return members;
 }
 
 export function getAvailableCount(): number {
-  return getAvailablePool().length;
+  return members.length;
 }
 
 export function getMemberByIndex(index: number): PoolMember | null {
-  const pool = getAvailablePool();
-  return pool[index] ?? null;
+  return members[index] ?? null;
+}
+
+export function getMemberPool(): PoolMember[] {
+  return members;
 }
 
 export function isKnownMember(username: string): boolean {
   return byUsername.has(normalizeUsername(username));
 }
-
