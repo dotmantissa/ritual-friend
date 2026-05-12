@@ -25,6 +25,7 @@ export function FriendZonePage() {
     isConnected,
     submitUsername,
     checkingUsername,
+    backendConnecting,
     summonFriend,
   } = useFriendZone();
 
@@ -101,6 +102,11 @@ export function FriendZonePage() {
       )}
 
       <main className="app-main relative z-10">
+        {backendConnecting && (
+          <div className="fixed left-1/2 top-4 z-[120] -translate-x-1/2 rounded-full border border-[color:var(--border)] bg-[color:var(--surface)] px-4 py-2 text-xs text-[color:var(--muted-foreground)]">
+            Backend connecting...
+          </div>
+        )}
         {page === "username" && (
           <section className="mx-auto flex w-full max-w-2xl flex-col items-center justify-center text-center">
             <div className="title-wrap">
@@ -192,7 +198,7 @@ export function FriendZonePage() {
               {!assignedFriend && isConnected && (
                 <button
                   onClick={summonFriend}
-                  disabled={revealState !== "ready"}
+                  disabled={revealState === "pending_tx" || revealState === "mining"}
                   className="summon-btn"
                 >
                   {revealState === "pending_tx"

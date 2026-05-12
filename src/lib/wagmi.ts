@@ -17,6 +17,6 @@ export const ritualChain = defineChain({
 export const wagmiConfig = createConfig({
   chains: [ritualChain],
   connectors: [injected(), metaMask()],
-  transports: { [ritualChain.id]: http() },
+  transports: { [ritualChain.id]: http("https://rpc.ritualfoundation.org") },
   ssr: true,
 });

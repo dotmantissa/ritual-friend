@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { decodeEventLog } from "viem";
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
-import { FRIEND_ZONE_ABI, FRIEND_ZONE_ADDRESS, FRIEND_ZONE_DEPLOYED } from "@/lib/constants";
+import { BACKEND_URL, FRIEND_ZONE_ABI, FRIEND_ZONE_ADDRESS, FRIEND_ZONE_DEPLOYED } from "@/lib/constants";
 
 export type AppPage = "username" | "reveal";
 export type RevealState = "idle" | "wallet_needed" | "ready" | "pending_tx" | "mining" | "revealed" | "error";
@@ -30,33 +30,55 @@ export function useFriendZone() {
   const [stats, setStats] = useState({ totalPairings: 0, availableCount: 0 });
   const [justRevealed, setJustRevealed] = useState(false);
   const [checkingUsername, setCheckingUsername] = useState(false);
+  const [backendConnecting, setBackendConnecting] = useState(false);
+  const [lastKnownMemberCount, setLastKnownMemberCount] = useState(0);
 
   const isConfigured = useMemo(
-    () => FRIEND_ZONE_DEPLOYED && FRIEND_ZONE_ADDRESS !== "0x0000000000000000000000000000000000000000",
+    () =>
+      FRIEND_ZONE_DEPLOYED &&
+      FRIEND_ZONE_ADDRESS.startsWith("0x") &&
+      FRIEND_ZONE_ADDRESS.length === 42 &&
+      FRIEND_ZONE_ADDRESS !== "0x0000000000000000000000000000000000000000" &&
+      FRIEND_ZONE_ABI.length > 0,
     []
   );
 
+  const apiUrl = (path: string) => `${BACKEND_URL}${path}`;
+
   const refreshStats = async () => {
-    const res = await fetch("/api/stats");
+    const res = await fetch(apiUrl("/api/stats"));
     const data = await res.json();
+    const availableCount = Number(data.availableCount ?? 0);
     setStats({
       totalPairings: data.totalPairings ?? 0,
-      availableCount: data.availableCount ?? 0,
+      availableCount,
     });
+    if (availableCount > 0) {
+      setLastKnownMemberCount(availableCount);
+    }
     return data;
   };
 
   useEffect(() => {
+    let mounted = true;
     const fetchStats = async () => {
       try {
+        if (mounted) setBackendConnecting(true);
         await refreshStats();
+        if (mounted) setBackendConnecting(false);
       } catch {
-        setStats({ totalPairings: 0, availableCount: 0 });
+        if (mounted) {
+          setBackendConnecting(true);
+          setStats({ totalPairings: 0, availableCount: 0 });
+        }
       }
     };
     fetchStats();
     const interval = setInterval(fetchStats, 30000);
-    return () => clearInterval(interval);
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
   }, []);
 
   useEffect(() => {
@@ -77,7 +99,7 @@ export function useFriendZone() {
 
     setCheckingUsername(true);
     try {
-      const res = await fetch(`/api/members/check/${encodeURIComponent(username)}`);
+      const res = await fetch(apiUrl(`/api/members/check/${encodeURIComponent(username)}`));
       const data = await res.json();
 
       if (data.status === "already_paired") {
@@ -108,28 +130,60 @@ export function useFriendZone() {
   };
 
   const summonFriend = async () => {
-    if (!address || !walletClient || !publicClient || !seekerUsername || !isConfigured) {
+    if (!isConnected || !address) {
+      setRevealState("wallet_needed");
+      setStatus("Connect your wallet to continue.");
+      return;
+    }
+
+    if (!isConfigured || FRIEND_ZONE_ADDRESS === "0x" || FRIEND_ZONE_ABI.length === 0) {
       setRevealState("error");
-      setStatus("Wallet/contract not ready.");
+      setStatus("Contract not configured — contact support.");
+      return;
+    }
+
+    if (!walletClient || !publicClient || !seekerUsername) {
+      setRevealState("error");
+      setStatus("Wallet client is still initializing. Please try again.");
       return;
     }
 
     try {
       setRevealState("pending_tx");
-      const countRes = await fetch("/api/members/available");
-      const countData = await countRes.json();
-      const count = Number(countData.count ?? 0);
-      if (count <= 0) {
-        setRevealState("error");
-        setStatus("All friendships have been forged. The Ritual network is fully connected. 🤝");
-        return;
+      let fetchedCount = 0;
+      try {
+        const countRes = await fetch(apiUrl("/api/members/available"));
+        const countData = await countRes.json();
+        fetchedCount = Number(countData.count ?? 0);
+      } catch {
+        fetchedCount = 0;
+      }
+      if (fetchedCount > 0) {
+        setLastKnownMemberCount(fetchedCount);
+      }
+      let memberCount = fetchedCount ?? 0;
+      if (memberCount === 0) {
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        try {
+          const retryRes = await fetch(apiUrl("/api/members/available"));
+          const retryData = await retryRes.json();
+          memberCount = Number(retryData.count ?? 0);
+        } catch {
+          memberCount = 0;
+        }
+        if (memberCount === 0) {
+          console.warn("Backend count unavailable; using fallback member count.");
+          memberCount = Math.max(lastKnownMemberCount, stats.availableCount, 1);
+        } else {
+          setLastKnownMemberCount(memberCount);
+        }
       }
 
       const hash = await walletClient.writeContract({
         address: FRIEND_ZONE_ADDRESS,
         abi: FRIEND_ZONE_ABI,
         functionName: "revealFriend",
-        args: [BigInt(count)],
+        args: [BigInt(memberCount)],
         value: 0n,
         account: address,
       });
@@ -156,7 +210,7 @@ export function useFriendZone() {
       if (friendIndex === null) throw new Error("FriendRevealed event missing");
 
       const tryClaim = async () => {
-        const claimRes = await fetch("/api/claim", {
+        const claimRes = await fetch(apiUrl("/api/claim"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ wallet: address, seekerUsername, friendIndex }),
@@ -200,6 +254,7 @@ export function useFriendZone() {
     isConnected,
     submitUsername,
     checkingUsername,
+    backendConnecting,
     summonFriend,
   };
 }

@@ -1,12 +1,18 @@
-import { useChainId, useSwitchChain, useAccount } from "wagmi";
+import { useEffect } from "react";
+import { useSwitchChain, useAccount } from "wagmi";
 import { ritualChain } from "@/lib/wagmi";
 
 export function NetworkGuard({ children }: { children: React.ReactNode }) {
-  const { isConnected } = useAccount();
-  const chainId = useChainId();
+  const { isConnected, chain } = useAccount();
   const { switchChain, isPending } = useSwitchChain();
+  const isWrongChain = isConnected && !!chain && chain.id !== ritualChain.id;
 
-  if (!isConnected || chainId === ritualChain.id) {
+  useEffect(() => {
+    if (!isWrongChain) return;
+    switchChain({ chainId: ritualChain.id });
+  }, [isWrongChain, switchChain]);
+
+  if (!isConnected || !isWrongChain) {
     return <>{children}</>;
   }
 
