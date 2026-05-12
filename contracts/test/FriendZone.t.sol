@@ -17,51 +17,50 @@ contract FriendZoneTest is Test {
 
     function testRevealStoresState() public {
         vm.prank(alice);
-        uint256 idx = friendZone.revealFriend(100, "alice", "bob", 10);
+        uint256 idx = friendZone.revealFriend(100, "alice");
 
         assertLt(idx, 100);
         assertTrue(friendZone.walletHasPaired(alice));
         assertEq(friendZone.walletFriendIndex(alice), idx);
         assertEq(friendZone.totalPairings(), 1);
-        assertEq(friendZone.claimedCount(), 2);
+        assertEq(friendZone.claimedCount(), 1);
         assertTrue(friendZone.isUsernameClaimed("alice"));
-        assertTrue(friendZone.isUsernameClaimed("bob"));
     }
 
     function testSecondRevealRevertsAlreadyPaired() public {
         vm.startPrank(alice);
-        friendZone.revealFriend(50, "alice", "bob", 7);
+        friendZone.revealFriend(50, "alice");
         vm.expectRevert(FriendZone.AlreadyPaired.selector);
-        friendZone.revealFriend(50, "alice", "bob", 7);
+        friendZone.revealFriend(50, "alice");
         vm.stopPrank();
     }
 
     function testMemberCountZeroReverts() public {
         vm.prank(alice);
         vm.expectRevert(FriendZone.MemberCountZero.selector);
-        friendZone.revealFriend(0, "alice", "bob", 0);
+        friendZone.revealFriend(0, "alice");
     }
 
     function testInsufficientFeeReverts() public {
         friendZone.setRevealFee(0.1 ether);
         vm.prank(alice);
         vm.expectRevert(FriendZone.InsufficientFee.selector);
-        friendZone.revealFriend(10, "alice", "bob", 0);
+        friendZone.revealFriend(10, "alice");
     }
 
     function testClaimedUsernameReverts() public {
         vm.prank(alice);
-        friendZone.revealFriend(10, "alice", "bob", 0);
+        friendZone.revealFriend(10, "alice");
 
         vm.prank(bob);
         vm.expectRevert(FriendZone.UsernameAlreadyClaimed.selector);
-        friendZone.revealFriend(10, "alice", "charlie", 1);
+        friendZone.revealFriend(10, "alice");
     }
 
     function testOwnerCanWithdraw() public {
         friendZone.setRevealFee(1 ether);
         vm.prank(alice);
-        friendZone.revealFriend{ value: 1 ether }(10, "alice", "bob", 1);
+        friendZone.revealFriend{ value: 1 ether }(10, "alice");
 
         uint256 beforeBal = address(this).balance;
         friendZone.withdraw();

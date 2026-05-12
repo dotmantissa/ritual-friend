@@ -2,7 +2,7 @@ import friendZoneArtifact from "../../contracts/out/FriendZone.sol/FriendZone.js
 
 const ENV_ADDRESS =
   (import.meta.env.VITE_FRIEND_ZONE_ADDRESS as `0x${string}` | undefined) ??
-  "0xb6c053cb74315f426efc64bd508df21fc20751a0";
+  "0xb05f9fa2fc1e5bd99566c8d4200257f526af28a4";
 const ENV_DEPLOYED = (import.meta.env.VITE_FRIEND_ZONE_DEPLOYED ?? "true").toLowerCase() === "true";
 const ENV_BACKEND_URL = (import.meta.env.VITE_BACKEND_URL as string | undefined) ?? "https://ritual-friend.vercel.app";
 

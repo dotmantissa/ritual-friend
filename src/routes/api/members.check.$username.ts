@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { QUOTES } from "@/lib/quotes";
 import { FRIEND_ZONE_ABI, FRIEND_ZONE_ADDRESS } from "@/lib/constants";
 import { friendRevealedEvent, friendZonePublicClient } from "@/lib/friendzone-chain";
-import { getMemberByUsername } from "@/lib/pool";
+import { getMemberPool } from "@/lib/pool";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -46,18 +46,23 @@ export const Route = createFileRoute("/api/members/check/$username")({
             fromBlock: 0n,
           });
           const lower = username.toLowerCase();
+          const members = getMemberPool().sort((a, b) => a.username.localeCompare(b.username));
 
           const asSeeker = events.find((event) => event.args.seekerUsername?.toLowerCase() === lower);
           if (asSeeker) {
-            const assignedUsername = asSeeker.args.assignedUsername ?? "";
-            const member = getMemberByUsername(assignedUsername);
             const friendIndex = Number(asSeeker.args.friendIndex ?? 0n);
+            const assigned = members[friendIndex % members.length];
+            if (!assigned) {
+              return new Response(JSON.stringify({ status: "fresh" }), {
+                headers: { "Content-Type": "application/json", ...corsHeaders },
+              });
+            }
             return new Response(
               JSON.stringify({
                 status: "already_paired",
                 friend: {
-                  username: assignedUsername,
-                  avatar_url: member?.avatar_url ?? "",
+                  username: assigned.username,
+                  avatar_url: assigned.avatar_url ?? "",
                   quote: QUOTES[friendIndex % QUOTES.length],
                 },
               }),
@@ -65,18 +70,26 @@ export const Route = createFileRoute("/api/members/check/$username")({
             );
           }
 
-          const asAssigned = events.find((event) => event.args.assignedUsername?.toLowerCase() === lower);
+          const asAssigned = events.find((event) => {
+            const friendIndex = Number(event.args.friendIndex ?? 0n);
+            const assigned = members[friendIndex % members.length];
+            return assigned?.username.toLowerCase() === lower;
+          });
           if (asAssigned) {
-            const assignedUsername = asAssigned.args.assignedUsername ?? "";
-            const member = getMemberByUsername(assignedUsername);
             const friendIndex = Number(asAssigned.args.friendIndex ?? 0n);
+            const assigned = members[friendIndex % members.length];
+            if (!assigned) {
+              return new Response(JSON.stringify({ status: "fresh" }), {
+                headers: { "Content-Type": "application/json", ...corsHeaders },
+              });
+            }
             return new Response(
               JSON.stringify({
                 status: "assigned_to_seeker",
                 seekerUsername: asAssigned.args.seekerUsername ?? "",
                 friend: {
-                  username: assignedUsername,
-                  avatar_url: member?.avatar_url ?? "",
+                  username: assigned.username,
+                  avatar_url: assigned.avatar_url ?? "",
                   quote: QUOTES[friendIndex % QUOTES.length],
                 },
               }),

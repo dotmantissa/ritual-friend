@@ -6,14 +6,12 @@ contract FriendZone {
         address indexed wallet,
         uint256 indexed friendIndex,
         uint256 memberCount,
-        string seekerUsername,
-        string assignedUsername
+        string seekerUsername
     );
 
     error AlreadyPaired();
     error UsernameAlreadyClaimed();
     error MemberCountZero();
-    error IndexAlreadyClaimed();
     error InsufficientFee();
     error NotOwner();
 
@@ -27,28 +25,18 @@ contract FriendZone {
     mapping(bytes32 => bool) public usernameHashClaimed;
     mapping(bytes32 => address) public usernameToWallet;
     mapping(address => bytes32) public walletToUsernameHash;
-    mapping(uint256 => bool) public indexClaimed;
-
     constructor() {
         owner = msg.sender;
     }
 
-    function revealFriend(
-        uint256 memberCount,
-        string calldata seekerUsername,
-        string calldata assignedUsername,
-        uint256 resolvedIndex
-    ) external payable returns (uint256 chainIndex) {
+    function revealFriend(uint256 memberCount, string calldata seekerUsername) external payable returns (uint256 chainIndex) {
         if (memberCount == 0) revert MemberCountZero();
         if (msg.value < revealFee) revert InsufficientFee();
         if (walletHasPaired[msg.sender]) revert AlreadyPaired();
 
         bytes32 seekerHash = keccak256(abi.encodePacked(_lower(seekerUsername)));
-        bytes32 assignedHash = keccak256(abi.encodePacked(_lower(assignedUsername)));
 
         if (usernameHashClaimed[seekerHash]) revert UsernameAlreadyClaimed();
-        if (usernameHashClaimed[assignedHash]) revert UsernameAlreadyClaimed();
-        if (indexClaimed[resolvedIndex]) revert IndexAlreadyClaimed();
 
         bytes32 entropy = keccak256(abi.encodePacked(block.prevrandao, block.timestamp, msg.sender, memberCount));
         chainIndex = uint256(entropy) % memberCount;
@@ -56,14 +44,12 @@ contract FriendZone {
         walletFriendIndex[msg.sender] = chainIndex;
         walletHasPaired[msg.sender] = true;
         usernameHashClaimed[seekerHash] = true;
-        usernameHashClaimed[assignedHash] = true;
         usernameToWallet[seekerHash] = msg.sender;
         walletToUsernameHash[msg.sender] = seekerHash;
-        indexClaimed[chainIndex] = true;
         totalPairings++;
-        claimedCount += 2;
+        claimedCount += 1;
 
-        emit FriendRevealed(msg.sender, chainIndex, memberCount, seekerUsername, assignedUsername);
+        emit FriendRevealed(msg.sender, chainIndex, memberCount, seekerUsername);
     }
 
     function isUsernameClaimed(string calldata username) external view returns (bool) {

@@ -3,7 +3,6 @@ import { decodeEventLog } from "viem";
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import { BACKEND_URL, FRIEND_ZONE_ABI, FRIEND_ZONE_ADDRESS, FRIEND_ZONE_DEPLOYED } from "@/lib/constants";
 import { QUOTES } from "@/lib/quotes";
-import { getMemberByUsername } from "@/lib/pool";
 
 export type AppPage = "username" | "reveal";
 export type RevealState = "idle" | "wallet_needed" | "ready" | "pending_tx" | "mining" | "revealed" | "error";
@@ -33,6 +32,7 @@ export function useFriendZone() {
   const [justRevealed, setJustRevealed] = useState(false);
   const [checkingUsername, setCheckingUsername] = useState(false);
   const [, setBackendReady] = useState(false);
+  const [txHash, setTxHash] = useState<`0x${string}` | null>(null);
 
   const isConfigured = useMemo(
     () =>
@@ -153,66 +153,104 @@ export function useFriendZone() {
 
     try {
       setRevealState("pending_tx");
-      const membersRes = await fetch(apiUrl("/api/members"));
-      const membersData = (await membersRes.json()) as { members?: Array<{ username: string; avatar_url: string }> };
-      const members = membersData.members ?? [];
-      const memberCount = members.length;
-      if (memberCount === 0) {
-        throw new Error("no_members_available");
+      const countRes = await fetch(apiUrl("/api/members/available"));
+      const countData = (await countRes.json()) as { count?: number };
+      const count = Number(countData.count ?? 0);
+      if (count === 0) {
+        setRevealState("error");
+        setStatus("Pool is empty.");
+        return;
       }
-      const entropy = `${Date.now()}-${address}-${seekerUsername}-${memberCount}`;
-      let seed = 0;
-      for (let i = 0; i < entropy.length; i++) seed = (seed * 31 + entropy.charCodeAt(i)) >>> 0;
-      const resolvedIndex = seed % memberCount;
-      const selectedAssignedUsername = members[resolvedIndex]?.username ?? seekerUsername;
 
       const hash = await walletClient.writeContract({
         address: FRIEND_ZONE_ADDRESS,
         abi: FRIEND_ZONE_ABI,
         functionName: "revealFriend",
-        args: [BigInt(memberCount), seekerUsername, selectedAssignedUsername, BigInt(resolvedIndex)],
+        args: [BigInt(count), seekerUsername],
         value: 0n,
         account: address,
       });
 
+      setTxHash(hash);
       setRevealState("mining");
-      const receipt = await publicClient.waitForTransactionReceipt({ hash });
-
-      let friendIndex: number | null = null;
-      let assignedUsername: string | null = null;
-      for (const log of receipt.logs) {
-        try {
-          const decoded = decodeEventLog({
-            abi: FRIEND_ZONE_ABI,
-            eventName: "FriendRevealed",
-            data: log.data,
-            topics: log.topics,
-          });
-          if (decoded.eventName === "FriendRevealed") {
-            friendIndex = Number(decoded.args.friendIndex);
-            assignedUsername = String(decoded.args.assignedUsername ?? "");
-            break;
-          }
-        } catch {}
-      }
-
-      if (friendIndex === null || !assignedUsername) throw new Error("FriendRevealed event missing");
-      const member = getMemberByUsername(assignedUsername);
-      const quote = QUOTES[friendIndex % QUOTES.length] ?? QUOTES[0];
-      setAssignedFriend({
-        username: assignedUsername,
-        avatar_url: member?.avatar_url,
-        quote,
-      });
-      setRevealState("revealed");
-      setJustRevealed(true);
-      setTimeout(() => setJustRevealed(false), 900);
-      await refreshStats();
     } catch (error: any) {
+      const message = String(error?.message ?? "");
+      if (message.includes("rejected") || message.includes("denied")) {
+        setRevealState("ready");
+        return;
+      }
+      setStatus(message || "Transaction failed");
       setRevealState("error");
-      setStatus(`Failed to summon friend: ${error?.message ?? "unknown error"}`);
     }
   };
+
+  useEffect(() => {
+    if (!txHash || revealState !== "mining" || !publicClient) return;
+    let cancelled = false;
+
+    const resolveFriend = async () => {
+      try {
+        const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash });
+        if (cancelled) return;
+
+        let friendIndex: number | null = null;
+        for (const log of receipt.logs) {
+          try {
+            const decoded = decodeEventLog({
+              abi: FRIEND_ZONE_ABI,
+              eventName: "FriendRevealed",
+              data: log.data,
+              topics: log.topics,
+            });
+            if (decoded.eventName === "FriendRevealed") {
+              friendIndex = Number(decoded.args.friendIndex);
+              break;
+            }
+          } catch {}
+        }
+
+        if (friendIndex === null) {
+          setStatus("No event found in receipt.");
+          setRevealState("error");
+          return;
+        }
+
+        const membersRes = await fetch(apiUrl("/api/members"));
+        const membersData = (await membersRes.json()) as { members?: Array<{ username: string; avatar_url: string }> };
+        const members = [...(membersData.members ?? [])].sort((a, b) => a.username.localeCompare(b.username));
+        if (members.length === 0) {
+          setStatus("Could not resolve friend. Contact support.");
+          setRevealState("error");
+          return;
+        }
+        const assigned = members[friendIndex % members.length];
+        if (!assigned) {
+          setStatus("Could not resolve friend. Contact support.");
+          setRevealState("error");
+          return;
+        }
+
+        setAssignedFriend({
+          username: assigned.username,
+          avatar_url: assigned.avatar_url,
+          quote: QUOTES[friendIndex % QUOTES.length],
+        });
+        setRevealState("revealed");
+        setJustRevealed(true);
+        setTimeout(() => setJustRevealed(false), 900);
+        await refreshStats();
+      } catch {
+        if (cancelled) return;
+        setStatus("Could not load friend data.");
+        setRevealState("error");
+      }
+    };
+
+    void resolveFriend();
+    return () => {
+      cancelled = true;
+    };
+  }, [txHash, revealState, publicClient]);
 
   return {
     page,

@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiStatsRouteImport } from './routes/api/stats'
 import { Route as ApiMembersRouteImport } from './routes/api/members'
 import { Route as ApiProxyAvatarRouteImport } from './routes/api/proxy.avatar'
+import { Route as ApiMembersAvailableRouteImport } from './routes/api/members.available'
 import { Route as ApiMembersCheckUsernameRouteImport } from './routes/api/members.check.$username'
 
 const IndexRoute = IndexRouteImport.update({
@@ -35,6 +36,11 @@ const ApiProxyAvatarRoute = ApiProxyAvatarRouteImport.update({
   path: '/api/proxy/avatar',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiMembersAvailableRoute = ApiMembersAvailableRouteImport.update({
+  id: '/available',
+  path: '/available',
+  getParentRoute: () => ApiMembersRoute,
+} as any)
 const ApiMembersCheckUsernameRoute = ApiMembersCheckUsernameRouteImport.update({
   id: '/check/$username',
   path: '/check/$username',
@@ -45,6 +51,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/api/members': typeof ApiMembersRouteWithChildren
   '/api/stats': typeof ApiStatsRoute
+  '/api/members/available': typeof ApiMembersAvailableRoute
   '/api/proxy/avatar': typeof ApiProxyAvatarRoute
   '/api/members/check/$username': typeof ApiMembersCheckUsernameRoute
 }
@@ -52,6 +59,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/api/members': typeof ApiMembersRouteWithChildren
   '/api/stats': typeof ApiStatsRoute
+  '/api/members/available': typeof ApiMembersAvailableRoute
   '/api/proxy/avatar': typeof ApiProxyAvatarRoute
   '/api/members/check/$username': typeof ApiMembersCheckUsernameRoute
 }
@@ -60,6 +68,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/api/members': typeof ApiMembersRouteWithChildren
   '/api/stats': typeof ApiStatsRoute
+  '/api/members/available': typeof ApiMembersAvailableRoute
   '/api/proxy/avatar': typeof ApiProxyAvatarRoute
   '/api/members/check/$username': typeof ApiMembersCheckUsernameRoute
 }
@@ -69,6 +78,7 @@ export interface FileRouteTypes {
     | '/'
     | '/api/members'
     | '/api/stats'
+    | '/api/members/available'
     | '/api/proxy/avatar'
     | '/api/members/check/$username'
   fileRoutesByTo: FileRoutesByTo
@@ -76,6 +86,7 @@ export interface FileRouteTypes {
     | '/'
     | '/api/members'
     | '/api/stats'
+    | '/api/members/available'
     | '/api/proxy/avatar'
     | '/api/members/check/$username'
   id:
@@ -83,6 +94,7 @@ export interface FileRouteTypes {
     | '/'
     | '/api/members'
     | '/api/stats'
+    | '/api/members/available'
     | '/api/proxy/avatar'
     | '/api/members/check/$username'
   fileRoutesById: FileRoutesById
@@ -124,6 +136,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiProxyAvatarRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/members/available': {
+      id: '/api/members/available'
+      path: '/available'
+      fullPath: '/api/members/available'
+      preLoaderRoute: typeof ApiMembersAvailableRouteImport
+      parentRoute: typeof ApiMembersRoute
+    }
     '/api/members/check/$username': {
       id: '/api/members/check/$username'
       path: '/check/$username'
@@ -135,10 +154,12 @@ declare module '@tanstack/react-router' {
 }
 
 interface ApiMembersRouteChildren {
+  ApiMembersAvailableRoute: typeof ApiMembersAvailableRoute
   ApiMembersCheckUsernameRoute: typeof ApiMembersCheckUsernameRoute
 }
 
 const ApiMembersRouteChildren: ApiMembersRouteChildren = {
+  ApiMembersAvailableRoute: ApiMembersAvailableRoute,
   ApiMembersCheckUsernameRoute: ApiMembersCheckUsernameRoute,
 }
 

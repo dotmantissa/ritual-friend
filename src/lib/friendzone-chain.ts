@@ -15,7 +15,6 @@ export const friendRevealedEvent = {
     { name: "friendIndex", type: "uint256", indexed: true },
     { name: "memberCount", type: "uint256", indexed: false },
     { name: "seekerUsername", type: "string", indexed: false },
-    { name: "assignedUsername", type: "string", indexed: false },
   ],
 } as const;
 
