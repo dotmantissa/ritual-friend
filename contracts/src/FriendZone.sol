@@ -25,6 +25,7 @@ contract FriendZone {
     mapping(bytes32 => bool) public usernameHashClaimed;
     mapping(bytes32 => address) public usernameToWallet;
     mapping(address => bytes32) public walletToUsernameHash;
+    mapping(uint256 => bool) public indexClaimed;
     constructor() {
         owner = msg.sender;
     }
@@ -38,6 +39,7 @@ contract FriendZone {
 
         bytes32 entropy = keccak256(abi.encodePacked(block.prevrandao, block.timestamp, msg.sender, memberCount));
         chainIndex = uint256(entropy) % memberCount;
+        indexClaimed[chainIndex] = true;
 
         walletFriendIndex[msg.sender] = chainIndex;
         walletHasPaired[msg.sender] = true;
@@ -52,6 +54,10 @@ contract FriendZone {
 
     function isUsernameClaimed(bytes32 usernameHash) external view returns (bool) {
         return usernameHashClaimed[usernameHash];
+    }
+
+    function isIndexClaimed(uint256 index) external view returns (bool) {
+        return indexClaimed[index];
     }
 
     function getWalletPairing(address wallet) external view returns (bool paired, uint256 friendIndex) {

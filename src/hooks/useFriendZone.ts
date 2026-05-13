@@ -116,7 +116,15 @@ export function useFriendZone() {
       const data = await res.json();
 
       if (data.status === "already_paired") {
-        setAssignedFriend(data.friend as AssignedFriend);
+        if (data.friend) {
+          setAssignedFriend(data.friend as AssignedFriend);
+        } else {
+          setAssignedFriend({
+            username: "unknown",
+            avatar_url: undefined,
+            quote: "Some friendships are written in the chain.",
+          });
+        }
         setPage("reveal");
         setRevealState("revealed");
         setStatus("Welcome back! Here's your Ritual friend.");
