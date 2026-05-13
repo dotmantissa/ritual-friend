@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { keccak256, toBytes } from "viem";
 import { QUOTES } from "@/lib/quotes";
 import { FRIEND_ZONE_ABI, FRIEND_ZONE_ADDRESS } from "@/lib/constants";
 import { friendRevealedEvent, friendZonePublicClient } from "@/lib/friendzone-chain";
@@ -27,12 +28,13 @@ export const Route = createFileRoute("/api/members/check/$username")({
               headers: { "Content-Type": "application/json", ...corsHeaders },
             });
           }
+          const usernameHash = keccak256(toBytes(username.toLowerCase()));
 
           const claimed = await friendZonePublicClient.readContract({
             address: FRIEND_ZONE_ADDRESS,
             abi: FRIEND_ZONE_ABI,
             functionName: "isUsernameClaimed",
-            args: [username],
+            args: [usernameHash],
           });
           if (!claimed) {
             return new Response(JSON.stringify({ status: "fresh" }), {
@@ -48,7 +50,7 @@ export const Route = createFileRoute("/api/members/check/$username")({
           const lower = username.toLowerCase();
           const members = getMemberPool().sort((a, b) => a.username.localeCompare(b.username));
 
-          const asSeeker = events.find((event) => event.args.seekerUsername?.toLowerCase() === lower);
+          const asSeeker = events.find((event) => event.args.seekerUsernameHash?.toLowerCase() === usernameHash.toLowerCase());
           if (asSeeker) {
             const friendIndex = Number(asSeeker.args.friendIndex ?? 0n);
             const assigned = members[friendIndex % members.length];

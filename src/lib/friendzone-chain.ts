@@ -13,8 +13,8 @@ export const friendRevealedEvent = {
   inputs: [
     { name: "wallet", type: "address", indexed: true },
     { name: "friendIndex", type: "uint256", indexed: true },
+    { name: "seekerUsernameHash", type: "bytes32", indexed: true },
     { name: "memberCount", type: "uint256", indexed: false },
-    { name: "seekerUsername", type: "string", indexed: false },
   ],
 } as const;
 

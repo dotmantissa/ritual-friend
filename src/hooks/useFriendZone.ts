@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { decodeEventLog } from "viem";
+import { decodeEventLog, keccak256, toBytes } from "viem";
 import { useAccount, usePublicClient, useWalletClient } from "wagmi";
 import { BACKEND_URL, FRIEND_ZONE_ABI, FRIEND_ZONE_ADDRESS, FRIEND_ZONE_DEPLOYED } from "@/lib/constants";
 import { QUOTES } from "@/lib/quotes";
@@ -33,6 +33,7 @@ export function useFriendZone() {
   const [checkingUsername, setCheckingUsername] = useState(false);
   const [, setBackendReady] = useState(false);
   const [txHash, setTxHash] = useState<`0x${string}` | null>(null);
+  const [memberCount, setMemberCount] = useState<number>(0);
 
   const isConfigured = useMemo(
     () =>
@@ -89,6 +90,14 @@ export function useFriendZone() {
       setRevealState("ready");
     }
   }, [isConnected, page, revealState]);
+
+  useEffect(() => {
+    if (page !== "reveal") return;
+    fetch(apiUrl("/api/members/available"))
+      .then((res) => res.json())
+      .then((data: { count?: number }) => setMemberCount(Number(data.count ?? 0)))
+      .catch(() => setMemberCount(0));
+  }, [page]);
 
   const submitUsername = async () => {
     const username = normalizeUsername(usernameInput);
@@ -152,21 +161,18 @@ export function useFriendZone() {
     }
 
     try {
-      setRevealState("pending_tx");
-      const countRes = await fetch(apiUrl("/api/members/available"));
-      const countData = (await countRes.json()) as { count?: number };
-      const count = Number(countData.count ?? 0);
-      if (count === 0) {
-        setRevealState("error");
-        setStatus("Pool is empty.");
+      if (memberCount === 0) {
+        setStatus("Pool not loaded yet, try again.");
         return;
       }
+      setRevealState("pending_tx");
+      const seekerHash = keccak256(toBytes(seekerUsername.toLowerCase()));
 
       const hash = await walletClient.writeContract({
         address: FRIEND_ZONE_ADDRESS,
         abi: FRIEND_ZONE_ABI,
         functionName: "revealFriend",
-        args: [BigInt(count), seekerUsername],
+        args: [BigInt(memberCount), seekerHash],
         value: 0n,
         account: address,
       });
