@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { decodeEventLog, keccak256, toBytes } from "viem";
-import { useAccount, usePublicClient, useWalletClient } from "wagmi";
+import { useAccount, usePublicClient, useWriteContract } from "wagmi";
 import { BACKEND_URL, FRIEND_ZONE_ABI, FRIEND_ZONE_ADDRESS, FRIEND_ZONE_DEPLOYED } from "@/lib/constants";
 import { QUOTES } from "@/lib/quotes";
 
@@ -20,7 +20,7 @@ function normalizeUsername(value: string): string {
 export function useFriendZone() {
   const { isConnected, address } = useAccount();
   const publicClient = usePublicClient();
-  const { data: walletClient } = useWalletClient();
+  const { writeContractAsync: doWrite } = useWriteContract();
 
   const [page, setPage] = useState<AppPage>("username");
   const [revealState, setRevealState] = useState<RevealState>("idle");
@@ -147,7 +147,7 @@ export function useFriendZone() {
     }
   };
 
-  const summonFriend = async () => {
+  const findFriend = async () => {
     if (!isConnected || !address) {
       setRevealState("wallet_needed");
       setStatus("Connect your wallet to continue.");
@@ -160,7 +160,7 @@ export function useFriendZone() {
       return;
     }
 
-    if (!walletClient || !publicClient || !seekerUsername) {
+    if (!publicClient || !seekerUsername) {
       setRevealState("error");
       setStatus("Wallet client is still initializing. Please try again.");
       return;
@@ -174,7 +174,7 @@ export function useFriendZone() {
       setRevealState("pending_tx");
       const seekerHash = keccak256(toBytes(seekerUsername.toLowerCase().trim()));
 
-      const hash = await walletClient.writeContract({
+      const hash = await doWrite({
         address: FRIEND_ZONE_ADDRESS,
         abi: FRIEND_ZONE_ABI,
         functionName: "revealFriend",
@@ -327,7 +327,7 @@ export function useFriendZone() {
     isConnected,
     submitUsername,
     checkingUsername,
-    summonFriend,
+    findFriend,
     walletAlreadyPaired,
   };
 }

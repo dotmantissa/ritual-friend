@@ -26,7 +26,7 @@ export function FriendZonePage() {
     walletAlreadyPaired,
     submitUsername,
     checkingUsername,
-    summonFriend,
+    findFriend,
   } = useFriendZone();
 
   const [imageReady, setImageReady] = useState(false);
@@ -192,7 +192,7 @@ export function FriendZonePage() {
 
               {!assignedFriend && isConnected && (
                 <button
-                  onClick={summonFriend}
+                  onClick={findFriend}
                   disabled={walletAlreadyPaired === true || revealState === "pending_tx" || revealState === "mining"}
                   className="summon-btn"
                 >
