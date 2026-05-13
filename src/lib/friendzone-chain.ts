@@ -34,6 +34,6 @@ export async function readFriendZoneStats(totalMembers: number) {
 
   return {
     totalPairings: Number(totalPairings),
-    availableCount: Math.max(0, totalMembers - Number(claimedCount)),
+    availableCount: Math.max(0, totalMembers - Number(totalPairings) * 2),
   };
 }
