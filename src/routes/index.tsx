@@ -23,6 +23,7 @@ export function FriendZonePage() {
     assignedFriend,
     justRevealed,
     isConnected,
+    walletAlreadyPaired,
     submitUsername,
     checkingUsername,
     summonFriend,
@@ -192,7 +193,7 @@ export function FriendZonePage() {
               {!assignedFriend && isConnected && (
                 <button
                   onClick={summonFriend}
-                  disabled={revealState === "pending_tx" || revealState === "mining"}
+                  disabled={walletAlreadyPaired === true || revealState === "pending_tx" || revealState === "mining"}
                   className="summon-btn"
                 >
                   {revealState === "pending_tx"

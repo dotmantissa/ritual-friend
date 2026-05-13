@@ -34,6 +34,7 @@ export function useFriendZone() {
   const [, setBackendReady] = useState(false);
   const [txHash, setTxHash] = useState<`0x${string}` | null>(null);
   const [memberCount, setMemberCount] = useState<number>(0);
+  const [walletAlreadyPaired, setWalletAlreadyPaired] = useState(false);
 
   const isConfigured = useMemo(
     () =>
@@ -130,10 +131,15 @@ export function useFriendZone() {
         return;
       }
 
-      setAssignedFriend(null);
-      setPage("reveal");
-      setRevealState(isConnected ? "ready" : "wallet_needed");
-      setStatus(null);
+      if (data.status === "fresh") {
+        setAssignedFriend(null);
+        setPage("reveal");
+        setRevealState("wallet_needed");
+        setStatus(null);
+        return;
+      }
+
+      setStatus("Could not check username. Try again.");
     } catch {
       setStatus("Could not check username. Try again.");
     } finally {
@@ -166,7 +172,7 @@ export function useFriendZone() {
         return;
       }
       setRevealState("pending_tx");
-      const seekerHash = keccak256(toBytes(seekerUsername.toLowerCase()));
+      const seekerHash = keccak256(toBytes(seekerUsername.toLowerCase().trim()));
 
       const hash = await walletClient.writeContract({
         address: FRIEND_ZONE_ADDRESS,
@@ -258,6 +264,55 @@ export function useFriendZone() {
     };
   }, [txHash, revealState, publicClient]);
 
+  useEffect(() => {
+    if (!publicClient || !address || page !== "reveal" || !isConnected) return;
+    let cancelled = false;
+
+    const resolveExisting = async () => {
+      try {
+        const paired = (await publicClient.readContract({
+          address: FRIEND_ZONE_ADDRESS,
+          abi: FRIEND_ZONE_ABI,
+          functionName: "walletHasPaired",
+          args: [address],
+        })) as boolean;
+        if (cancelled) return;
+        setWalletAlreadyPaired(paired === true);
+        if (!paired) return;
+
+        const existingIndex = (await publicClient.readContract({
+          address: FRIEND_ZONE_ADDRESS,
+          abi: FRIEND_ZONE_ABI,
+          functionName: "walletFriendIndex",
+          args: [address],
+        })) as bigint;
+        if (cancelled) return;
+
+        const membersRes = await fetch(apiUrl("/api/members"));
+        const membersData = (await membersRes.json()) as { members?: Array<{ username: string; avatar_url: string }> };
+        const members = [...(membersData.members ?? [])].sort((a, b) => a.username.localeCompare(b.username));
+        if (members.length === 0) return;
+        const index = Number(existingIndex);
+        const assigned = members[index % members.length];
+        if (!assigned) return;
+
+        setAssignedFriend({
+          username: assigned.username,
+          avatar_url: assigned.avatar_url,
+          quote: QUOTES[index % QUOTES.length],
+        });
+        setRevealState("revealed");
+      } catch {
+        setWalletAlreadyPaired(false);
+      }
+    };
+
+    void resolveExisting();
+    return () => {
+      cancelled = true;
+    };
+  }, [publicClient, address, page, isConnected]);
+
   return {
     page,
     setPage,
@@ -273,5 +328,6 @@ export function useFriendZone() {
     submitUsername,
     checkingUsername,
     summonFriend,
+    walletAlreadyPaired,
   };
 }

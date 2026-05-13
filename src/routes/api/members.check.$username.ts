@@ -28,7 +28,7 @@ export const Route = createFileRoute("/api/members/check/$username")({
               headers: { "Content-Type": "application/json", ...corsHeaders },
             });
           }
-          const usernameHash = keccak256(toBytes(username.toLowerCase()));
+          const usernameHash = keccak256(toBytes(username.toLowerCase().trim()));
 
           const claimed = await friendZonePublicClient.readContract({
             address: FRIEND_ZONE_ADDRESS,
@@ -36,6 +36,9 @@ export const Route = createFileRoute("/api/members/check/$username")({
             functionName: "isUsernameClaimed",
             args: [usernameHash],
           });
+          console.log("checking username:", username);
+          console.log("computed hash:", usernameHash);
+          console.log("contract returned:", claimed);
           if (!claimed) {
             return new Response(JSON.stringify({ status: "fresh" }), {
               headers: { "Content-Type": "application/json", ...corsHeaders },
